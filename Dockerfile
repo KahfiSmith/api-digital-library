@@ -10,8 +10,8 @@ RUN npm install -g pnpm
 # Copy package.json and pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies with limited memory
+RUN NODE_OPTIONS="--max-old-space-size=512" pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
@@ -19,11 +19,11 @@ COPY . .
 # Build stage
 FROM base AS builder
 
-# Generate Prisma client
-RUN pnpm exec prisma generate
+# Generate Prisma client with limited memory
+RUN NODE_OPTIONS="--max-old-space-size=512" pnpm exec prisma generate
 
-# Build the application
-RUN pnpm run build
+# Build the application with limited memory
+RUN NODE_OPTIONS="--max-old-space-size=512" pnpm run build
 
 # Production stage
 FROM node:18-alpine AS production
@@ -41,8 +41,8 @@ RUN adduser -S nodejs -u 1001
 # Copy package.json and pnpm-lock.yaml
 COPY package.json pnpm-lock.yaml ./
 
-# Install production dependencies only
-RUN pnpm install --frozen-lockfile --prod
+# Install production dependencies only with reduced memory usage
+RUN NODE_OPTIONS="--max-old-space-size=512" pnpm install --frozen-lockfile --prod
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
