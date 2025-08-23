@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  LIBRARIAN
+  USER
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum ListType {
+  FAVORITES
+  WISHLIST
+  READING
+  COMPLETED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String   @map("first_name")
+  lastName      String   @map("last_name")
+  avatarUrl     String?  @map("avatar_url")
+  role          Role     @default(USER)
+  isActive      Boolean  @default(true) @map("is_active")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  bookLoans    BookLoan[]
+  bookReviews  BookReview[]
+  bookLists    UserBookList[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  slug        String   @unique
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  books Book[]
+
+  @@map("categories")
+}
+
+model Book {
+  id              String    @id @default(cuid())
+  isbn            String?   @unique
+  title           String
+  subtitle        String?
+  authors         String[]
+  description     String?
+  publisher       String?
+  publishedDate   DateTime? @map("published_date")
+  pageCount       Int?      @map("page_count")
+  language        String    @default("en")
+  coverUrl        String?   @map("cover_url")
+  pdfUrl          String?   @map("pdf_url")
+  categoryId      String    @map("category_id")
+  tags            String[]
+  rating          Float     @default(0.0)
+  totalCopies     Int       @default(1) @map("total_copies")
+  availableCopies Int       @default(1) @map("available_copies")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  category    Category       @relation(fields: [categoryId], references: [id])
+  bookLoans   BookLoan[]
+  bookReviews BookReview[]
+  bookLists   UserBookList[]
+
+  @@map("books")
+}
+
+model BookLoan {
+  id         String     @id @default(cuid())
+  userId     String     @map("user_id")
+  bookId     String     @map("book_id")
+  loanDate   DateTime   @default(now()) @map("loan_date")
+  dueDate    DateTime   @map("due_date")
+  returnDate DateTime?  @map("return_date")
+  status     LoanStatus @default(ACTIVE)
+  fineAmount Float      @default(0.0) @map("fine_amount")
+  notes      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@map("book_loans")
+}
+
+model BookReview {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  bookId     String   @map("book_id")
+  rating     Int
+  reviewText String?  @map("review_text")
+  isPublic   Boolean  @default(true) @map("is_public")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@map("book_reviews")
+}
+
+model UserBookList {
+  id       String   @id @default(cuid())
+  userId   String   @map("user_id")
+  bookId   String   @map("book_id")
+  listType ListType @map("list_type")
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId, listType])
+  @@map("user_book_lists")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  tokenHash String   @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}

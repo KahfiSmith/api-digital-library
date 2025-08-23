@@ -13,12 +13,10 @@ const logger = winston.createLogger({
   transports: [
     new winston.transports.File({ 
       filename: process.env.LOG_FILE || './logs/app.log',
-      level: 'info'
-    }),
-    new winston.transports.File({ 
-      filename: './logs/error.log', 
-      level: 'error' 
-    }),
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
+    })
   ],
 })
 

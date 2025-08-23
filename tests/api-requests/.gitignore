@@ -1,0 +1,8 @@
+# Ignore deprecated files
+DEPRECATED-*
+
+# Ignore any temporary test files
+*.tmp
+*.temp
+test-files/
+temp-*
