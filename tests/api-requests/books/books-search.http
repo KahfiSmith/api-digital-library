@@ -1,0 +1,85 @@
+### Books - Search and Filter Operations
+### Environment variables from ../environments.env
+
+@baseUrl = {{$dotenv baseUrl}}
+@apiUrl = {{$dotenv apiUrl}}
+
+###
+### Search Books by Title
+GET {{apiUrl}}/books/search?q=java
+Content-Type: application/json
+
+###
+### Search Books by Author
+GET {{apiUrl}}/books/search?q=martin
+Content-Type: application/json
+
+###
+### Search Books by Keywords
+GET {{apiUrl}}/books/search?q=programming
+Content-Type: application/json
+
+###
+### Search with Pagination
+GET {{apiUrl}}/books/search?q=architecture&page=1&limit=3
+Content-Type: application/json
+
+###
+### Advanced Search with Multiple Filters
+GET {{apiUrl}}/books/search?q=java&author=Joshua&minRating=4.0&maxPages=500
+Content-Type: application/json
+
+###
+### Search by Publisher
+GET {{apiUrl}}/books/search?publisher=Addison-Wesley
+Content-Type: application/json
+
+###
+### Search by Publication Year Range
+GET {{apiUrl}}/books/search?publishedAfter=2015-01-01&publishedBefore=2020-01-01
+Content-Type: application/json
+
+###
+### Search by Language
+GET {{apiUrl}}/books/search?language=en
+Content-Type: application/json
+
+###
+### Search by Tags
+GET {{apiUrl}}/books/search?tags=Programming,Java
+Content-Type: application/json
+
+###
+### Search with Sorting
+GET {{apiUrl}}/books/search?q=programming&sortBy=rating&sortOrder=desc
+Content-Type: application/json
+
+###
+### Search Available Books Only
+GET {{apiUrl}}/books/search?q=clean&availableOnly=true
+Content-Type: application/json
+
+###
+### Full Text Search
+GET {{apiUrl}}/books/search?q=agile software craftsmanship&searchType=fulltext
+Content-Type: application/json
+
+###
+### Empty Search Query (should return all books)
+GET {{apiUrl}}/books/search?q=
+Content-Type: application/json
+
+###
+### Search with No Results
+GET {{apiUrl}}/books/search?q=nonexistentbook12345
+Content-Type: application/json
+
+###
+### Search with Special Characters
+GET {{apiUrl}}/books/search?q=C++
+Content-Type: application/json
+
+###
+### Invalid Search Parameters (Error Test)
+GET {{apiUrl}}/books/search?page=-1&limit=1000
+Content-Type: application/json

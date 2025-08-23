@@ -1,0 +1,106 @@
+### Users - Profile Management
+### Environment variables from ../environments.env
+
+@baseUrl = {{$dotenv baseUrl}}
+@apiUrl = {{$dotenv apiUrl}}
+@authToken = YOUR_TOKEN_HERE
+
+###
+### Get Current User Profile
+GET {{apiUrl}}/users/profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Update User Profile
+PUT {{apiUrl}}/users/profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "firstName": "Updated First",
+  "lastName": "Updated Last",
+  "bio": "Updated bio information about the user",
+  "phoneNumber": "+1234567890",
+  "dateOfBirth": "1990-01-01T00:00:00.000Z"
+}
+
+###
+### Partial Profile Update
+PATCH {{apiUrl}}/users/profile
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "bio": "Just updated my bio!"
+}
+
+###
+### Change Password
+PUT {{apiUrl}}/users/profile/password
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "currentPassword": "{{$dotenv userPassword}}",
+  "newPassword": "NewSecurePassword123!",
+  "confirmPassword": "NewSecurePassword123!"
+}
+
+###
+### Upload Profile Picture
+POST {{apiUrl}}/users/profile/picture
+Content-Type: multipart/form-data; boundary=boundary
+Authorization: Bearer {{authToken}}
+
+--boundary
+Content-Disposition: form-data; name="profilePicture"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/profile-picture.jpg
+--boundary--
+
+###
+### Delete Profile Picture
+DELETE {{apiUrl}}/users/profile/picture
+Authorization: Bearer {{authToken}}
+
+###
+### Get User Profile by ID (Admin/Librarian only)
+GET {{apiUrl}}/users/550e8400-e29b-41d4-a716-446655440002
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Update Profile without Authentication (Error Test)
+PUT {{apiUrl}}/users/profile
+Content-Type: application/json
+
+{
+  "firstName": "Unauthorized",
+  "lastName": "Update"
+}
+
+###
+### Invalid Password Change (Error Test)
+PUT {{apiUrl}}/users/profile/password
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "currentPassword": "wrongpassword",
+  "newPassword": "NewPassword123!",
+  "confirmPassword": "NewPassword123!"
+}
+
+###
+### Password Mismatch (Validation Test)
+PUT {{apiUrl}}/users/profile/password
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "currentPassword": "{{$dotenv userPassword}}",
+  "newPassword": "NewPassword123!",
+  "confirmPassword": "DifferentPassword123!"
+}

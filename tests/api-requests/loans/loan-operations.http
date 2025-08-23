@@ -1,0 +1,122 @@
+### Book Loans - User Operations
+### Environment variables from ../environments.env
+
+@baseUrl = {{$dotenv baseUrl}}
+@apiUrl = {{$dotenv apiUrl}}
+@authToken = YOUR_TOKEN_HERE
+
+###
+### Get My Active Loans
+GET {{apiUrl}}/loans/my-loans
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Get My Loan History
+GET {{apiUrl}}/loans/my-loans?status=all
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Create New Book Loan (Borrow Book)
+POST {{apiUrl}}/loans
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "bookId": "660e8400-e29b-41d4-a716-446655440002"
+}
+
+###
+### Get Loan Details
+GET {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Return Book (End Loan)
+PUT {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/return
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Renew Loan (Extend Due Date)
+PUT {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/renew
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "extensionDays": 7
+}
+
+###
+### Request Loan Extension
+POST {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/extension-request
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "requestedDays": 14,
+  "reason": "Need more time to finish reading"
+}
+
+###
+### Get Overdue Loans
+GET {{apiUrl}}/loans/my-loans?status=overdue
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Check Book Availability for Loan
+GET {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440002/availability
+Content-Type: application/json
+
+###
+### Reserve Book (if not available)
+POST {{apiUrl}}/loans/reserve
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "bookId": "660e8400-e29b-41d4-a716-446655440002"
+}
+
+###
+### Get My Reservations
+GET {{apiUrl}}/loans/my-reservations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+### Cancel Reservation
+DELETE {{apiUrl}}/loans/reservations/reservation-id-here
+Authorization: Bearer {{authToken}}
+
+###
+### Try to Borrow Unavailable Book (Error Test)
+POST {{apiUrl}}/loans
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "bookId": "660e8400-e29b-41d4-a716-446655440003"
+}
+
+###
+### Try to Borrow Non-existent Book (Error Test)
+POST {{apiUrl}}/loans
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "bookId": "invalid-book-id"
+}
+
+###
+### Try Loan Operation without Authentication (Error Test)
+POST {{apiUrl}}/loans
+Content-Type: application/json
+
+{
+  "bookId": "660e8400-e29b-41d4-a716-446655440002"
+}

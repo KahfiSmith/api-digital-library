@@ -1,0 +1,101 @@
+### Books - CRUD Operations
+### Environment variables from ../environments.env
+
+@baseUrl = {{$dotenv baseUrl}}
+@apiUrl = {{$dotenv apiUrl}}
+@authToken = YOUR_TOKEN_HERE
+
+###
+### Get All Books
+GET {{apiUrl}}/books
+Content-Type: application/json
+
+###
+### Get All Books with Pagination
+GET {{apiUrl}}/books?page=1&limit=5
+Content-Type: application/json
+
+###
+### Get Book by ID (Effective Java from seed data)
+GET {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+###
+### Get Book by ISBN
+GET {{apiUrl}}/books/isbn/9780134685991
+Content-Type: application/json
+
+###
+### Create New Book (Admin/Librarian only)
+POST {{apiUrl}}/books
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "isbn": "9781234567890",
+  "title": "Test API Development",
+  "subtitle": "Building RESTful Services with Node.js",
+  "authors": ["John Developer", "Jane Coder"],
+  "description": "A comprehensive guide to building RESTful APIs with Node.js and Express.",
+  "publisher": "Tech Publications",
+  "publishedDate": "2024-01-15T00:00:00.000Z",
+  "pageCount": 450,
+  "language": "en",
+  "categoryId": "programming-category-id",
+  "tags": ["API", "Node.js", "Backend", "REST"],
+  "totalCopies": 5
+}
+
+###
+### Update Book (Admin/Librarian only)
+PUT {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "description": "Updated description: The definitive guide to Java programming from the creator of the Java platform. Now with updated examples and best practices.",
+  "totalCopies": 5,
+  "tags": ["Java", "Programming", "Best Practices", "Updated Edition"]
+}
+
+###
+### Partial Update Book (Admin/Librarian only)
+PATCH {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "rating": 4.9
+}
+
+###
+### Delete Book (Admin only)
+DELETE {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {{authToken}}
+
+###
+### Get Non-existent Book (Error Test)
+GET {{apiUrl}}/books/invalid-book-id
+Content-Type: application/json
+
+###
+### Create Book with Invalid Data (Validation Test)
+POST {{apiUrl}}/books
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Incomplete Book",
+  "authors": []
+}
+
+###
+### Create Book without Authentication (Error Test)
+POST {{apiUrl}}/books
+Content-Type: application/json
+
+{
+  "isbn": "9781111111111",
+  "title": "Unauthorized Book",
+  "authors": ["Anonymous"]
+}

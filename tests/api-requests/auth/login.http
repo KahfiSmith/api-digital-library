@@ -1,0 +1,67 @@
+### Authentication - Login Endpoints
+### Environment variables from ../environments.env
+
+@baseUrl = {{$dotenv baseUrl}}
+@apiUrl = {{$dotenv apiUrl}}
+
+###
+### Login as Admin
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv adminEmail}}",
+  "password": "{{$dotenv adminPassword}}"
+}
+
+###
+### Login as Librarian  
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv librarianEmail}}",
+  "password": "{{$dotenv librarianPassword}}"
+}
+
+###
+### Login as Regular User (John)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv userEmail}}",
+  "password": "{{$dotenv userPassword}}"
+}
+
+###
+### Login as Regular User (Alice)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv aliceEmail}}",
+  "password": "{{$dotenv alicePassword}}"
+}
+
+###
+### Login with Invalid Credentials (Error Test)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "invalid@example.com",
+  "password": "wrongpassword"
+}
+
+###
+### Login with Missing Fields (Validation Test)
+POST {{apiUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{$dotenv userEmail}}"
+}
+
+### Copy token from successful login response above:
+### @authToken = YOUR_ACCESS_TOKEN_HERE
