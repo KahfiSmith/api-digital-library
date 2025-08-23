@@ -5,7 +5,11 @@
       "Bash(mkdir:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm run:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(mv:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm db:migrate:*)"
     ],
     "deny": [],
     "ask": []
