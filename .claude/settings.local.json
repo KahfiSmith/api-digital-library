@@ -9,7 +9,8 @@
       "Bash(docker-compose up:*)",
       "Bash(mv:*)",
       "Bash(pnpm db:generate:*)",
-      "Bash(pnpm db:migrate:*)"
+      "Bash(pnpm db:migrate:*)",
+      "Bash(timeout 10 pnpm dev)"
     ],
     "deny": [],
     "ask": []
