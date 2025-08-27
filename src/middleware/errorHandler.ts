@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '@/utils/logger';
+import { Prisma } from '@prisma/client';
+import { AppError } from '@/utils/appError';
 
 interface CustomError extends Error {
   statusCode?: number;
@@ -25,8 +27,19 @@ export const errorHandler = (
     statusCode: err.statusCode
   });
 
+  // Prisma error mapping
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2002') {
+      err = new AppError('Duplicate value violates unique constraint', 409);
+    } else if (err.code === 'P2025') {
+      err = new AppError('Resource not found', 404);
+    } else {
+      err = new AppError('Database error', 400);
+    }
+  }
+
   if (process.env.NODE_ENV === 'development') {
-    res.status(err.statusCode).json({
+    res.status(err.statusCode || 500).json({
       status: err.status,
       error: err,
       message: err.message,
@@ -34,7 +47,7 @@ export const errorHandler = (
     });
   } else {
     if (err.isOperational) {
-      res.status(err.statusCode).json({
+      res.status(err.statusCode || 500).json({
         status: err.status,
         message: err.message
       });
