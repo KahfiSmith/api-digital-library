@@ -1,22 +1,18 @@
 import { Router } from 'express';
-import type { Request, Response } from 'express';
+import { authenticateJWT } from '@/middleware/auth';
+import { validateRequest } from '@/middleware/validate';
+import * as UsersController from '@/controllers/users.controller';
+import { listRules, idParam, updateProfileRules, changePasswordRules } from '@/validators/users';
+import { uploadAvatar } from '@/utils/storage';
 
 const router: Router = Router();
 
-router.get('/profile', (req: Request, res: Response) => {
-  res.json({ message: 'Get user profile endpoint' });
-});
+router.get('/profile', authenticateJWT, UsersController.getProfile);
+router.put('/profile', authenticateJWT, updateProfileRules, validateRequest, UsersController.updateProfile);
+router.post('/profile/avatar', authenticateJWT, uploadAvatar.single('file'), UsersController.updateAvatar);
+router.put('/profile/password', authenticateJWT, changePasswordRules, validateRequest, UsersController.changePassword);
 
-router.put('/profile', (req: Request, res: Response) => {
-  res.json({ message: 'Update user profile endpoint' });
-});
-
-router.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Get all users endpoint' });
-});
-
-router.get('/:id', (req: Request, res: Response) => {
-  res.json({ message: 'Get user by ID endpoint' });
-});
+router.get('/', listRules, validateRequest, UsersController.list);
+router.get('/:id', idParam, validateRequest, UsersController.getById);
 
 export default router;

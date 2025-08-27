@@ -1,26 +1,17 @@
 import { Router } from 'express';
-import type { Request, Response } from 'express';
+import * as CategoriesController from '@/controllers/categories.controller';
+import { authenticateJWT, requireRoles } from '@/middleware/auth';
+import { validateRequest } from '@/middleware/validate';
+import { listRules, idParam, createRules, updateRules } from '@/validators/categories';
 
 const router: Router = Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Get all categories endpoint' });
-});
+router.get('/', listRules, validateRequest, CategoriesController.list);
+router.get('/:id', idParam, validateRequest, CategoriesController.getById);
 
-router.get('/:id', (req: Request, res: Response) => {
-  res.json({ message: 'Get category by ID endpoint' });
-});
-
-router.post('/', (req: Request, res: Response) => {
-  res.json({ message: 'Create category endpoint' });
-});
-
-router.put('/:id', (req: Request, res: Response) => {
-  res.json({ message: 'Update category endpoint' });
-});
-
-router.delete('/:id', (req: Request, res: Response) => {
-  res.json({ message: 'Delete category endpoint' });
-});
+// Protected
+router.post('/', authenticateJWT, requireRoles('ADMIN', 'LIBRARIAN'), createRules, validateRequest, CategoriesController.create);
+router.put('/:id', authenticateJWT, requireRoles('ADMIN', 'LIBRARIAN'), updateRules, validateRequest, CategoriesController.update);
+router.delete('/:id', authenticateJWT, requireRoles('ADMIN', 'LIBRARIAN'), idParam, validateRequest, CategoriesController.remove);
 
 export default router;

@@ -1,26 +1,22 @@
 import { Router } from 'express';
-import type { Request, Response } from 'express';
+import * as LoansController from '@/controllers/loans.controller';
+import { authenticateJWT, requireRoles } from '@/middleware/auth';
+import { validateRequest } from '@/middleware/validate';
+import { listRules, idParam, createRules } from '@/validators/loans';
 
 const router: Router = Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Get all loans endpoint' });
-});
+// Admin/Librarian can view all loans; regular users should use /user/:userId
+router.get('/', authenticateJWT, requireRoles('ADMIN', 'LIBRARIAN'), listRules, validateRequest, LoansController.list);
+router.get('/:id', authenticateJWT, idParam, validateRequest, LoansController.getById);
 
-router.get('/:id', (req: Request, res: Response) => {
-  res.json({ message: 'Get loan by ID endpoint' });
-});
+// Create a loan: users can only create for themselves
+router.post('/', authenticateJWT, createRules, validateRequest, LoansController.create);
 
-router.post('/', (req: Request, res: Response) => {
-  res.json({ message: 'Create loan endpoint' });
-});
+// Return loan
+router.put('/:id/return', authenticateJWT, idParam, validateRequest, LoansController.returnLoan);
 
-router.put('/:id/return', (req: Request, res: Response) => {
-  res.json({ message: 'Return book endpoint' });
-});
-
-router.get('/user/:userId', (req: Request, res: Response) => {
-  res.json({ message: 'Get loans by user endpoint' });
-});
+// Loans for a user
+router.get('/user/:userId', authenticateJWT, listRules, validateRequest, LoansController.listByUser);
 
 export default router;
