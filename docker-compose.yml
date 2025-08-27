@@ -29,7 +29,7 @@ services:
     container_name: digital-library-api
     environment:
       NODE_ENV: production
-      PORT: 3000
+      PORT: 3001
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: digital_library
@@ -46,13 +46,13 @@ services:
       ALLOWED_FILE_TYPES: jpg,jpeg,png,pdf,doc,docx
       RATE_LIMIT_WINDOW_MS: 900000
       RATE_LIMIT_MAX_REQUESTS: 100
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3001
       LOG_LEVEL: info
       LOG_FILE: ./logs/app.log
       HELMET_CSP: true
       TRUST_PROXY: false
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - ./public/uploads:/app/public/uploads
       - ./logs:/app/logs

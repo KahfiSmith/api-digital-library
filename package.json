@@ -5,9 +5,9 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon",
-    "build": "set NODE_OPTIONS=--max-old-space-size=512 && rimraf dist && set NODE_OPTIONS=--max-old-space-size=512 && tsc",
-    "start": "set NODE_OPTIONS=--max-old-space-size=512 && node dist/server.js",
-    "start:prod": "set NODE_ENV=production && set NODE_OPTIONS=--max-old-space-size=512 && node dist/server.js",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=512 rimraf dist && cross-env NODE_OPTIONS=--max-old-space-size=512 tsc",
+    "start": "cross-env NODE_OPTIONS=--max-old-space-size=512 node dist/server.js",
+    "start:prod": "cross-env NODE_ENV=production NODE_OPTIONS=--max-old-space-size=512 node dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:watch": "echo \"Error: no test watch specified\" && exit 1",
     "lint": "eslint . --ext .ts,.js",
@@ -18,14 +18,14 @@
     "docker:run": "docker-compose up -d",
     "docker:stop": "docker-compose down",
     "docker:logs": "docker-compose logs -f api",
-    "db:generate": "set NODE_OPTIONS=--max-old-space-size=512 && prisma generate",
-    "db:push": "set NODE_OPTIONS=--max-old-space-size=512 && prisma db push",
-    "db:migrate": "set NODE_OPTIONS=--max-old-space-size=512 && prisma migrate dev",
-    "db:migrate:prod": "set NODE_OPTIONS=--max-old-space-size=512 && prisma migrate deploy",
-    "db:seed": "set NODE_OPTIONS=--max-old-space-size=512 && prisma db seed",
-    "db:studio": "set NODE_OPTIONS=--max-old-space-size=512 && prisma studio",
-    "db:reset": "set NODE_OPTIONS=--max-old-space-size=512 && prisma migrate reset",
-    "postinstall": "set NODE_OPTIONS=--max-old-space-size=512 && prisma generate"
+    "db:generate": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma generate",
+    "db:push": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma db push",
+    "db:migrate": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma migrate dev",
+    "db:migrate:prod": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma migrate deploy",
+    "db:seed": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma db seed",
+    "db:studio": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma studio",
+    "db:reset": "cross-env NODE_OPTIONS=--max-old-space-size=512 prisma migrate reset",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "api",
@@ -60,6 +60,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-security": "^3.0.1",
     "nodemon": "^3.0.0",
+    "cross-env": "^7.0.3",
     "prisma": "^5.0.0",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.4",
@@ -79,6 +80,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
+    "nodemailer": "^6.9.13",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"
   }

@@ -25,7 +25,6 @@ Backend API untuk sistem perpustakaan digital menggunakan Node.js dan TypeScript
 - **cors** - Cross-Origin Resource Sharing
 - **express-rate-limit** - Rate limiting
 - **express-validator** - Request validation
-- **joi** - Schema validation
 
 ### File Management
 - **multer** - File upload handling
@@ -46,14 +45,13 @@ Backend API untuk sistem perpustakaan digital menggunakan Node.js dan TypeScript
 
 ```
 ├── src/
-│   ├── controllers/     # Request handlers
-│   ├── middlewares/     # Express middlewares
-│   ├── models/          # Data models
-│   ├── routes/          # API routes
-│   ├── services/        # Business logic
-│   ├── utils/           # Utility functions
-│   ├── types/           # TypeScript type definitions
-│   └── database/        # Database configuration
+│   ├── controllers/    # Request handlers
+│   ├── middleware/     # Express middleware (singular)
+│   ├── routes/         # API routes
+│   ├── services/       # Business logic
+│   ├── utils/          # Utility functions
+│   ├── types/          # TypeScript type definitions
+│   └── database/       # Database configuration
 ├── tests/
 │   ├── unit/           # Unit tests
 │   ├── integration/    # Integration tests
@@ -110,7 +108,7 @@ Backend API untuk sistem perpustakaan digital menggunakan Node.js dan TypeScript
    
    **Option A: Using Docker (Recommended)**
    ```bash
-   # Start PostgreSQL and Redis with Docker Compose
+   # Start PostgreSQL with Docker Compose
    pnpm run docker:run
    
    # Check logs
@@ -181,7 +179,7 @@ Copy `.env.example` to `.env` and configure:
 ```env
 # Server
 NODE_ENV=development
-PORT=3000
+PORT=3001
 HOST=localhost
 
 # Database

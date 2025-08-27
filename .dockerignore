@@ -83,5 +83,4 @@ tests/
 # Optional files
 .prettierrc*
 .eslintrc*
-tsconfig.json
 jest.config.*
