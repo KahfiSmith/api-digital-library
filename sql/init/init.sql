@@ -8,7 +8,9 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- The database is created automatically from POSTGRES_DB environment variable
 
 -- Run migrations
-\i /docker-entrypoint-initdb.d/001_initial_setup.sql
+-- Note: Prisma migrations will handle schema creation.
+-- If you add raw SQL migrations, include them here.
+-- \i /docker-entrypoint-initdb.d/001_initial_setup.sql
 
 -- Run seeds (optional, comment out for production)
 -- \i /docker-entrypoint-initdb.d/001_sample_data.sql
