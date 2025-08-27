@@ -6,8 +6,9 @@ dotenv.config();
 import app from '@/app';
 import { logger } from '@/utils/logger';
 import { prisma } from '@/database/prisma';
+import { validateEnv } from '@/utils/env';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
 let server: Server;
@@ -33,6 +34,7 @@ async function gracefulShutdown(signal: string): Promise<void> {
 
 async function startServer(): Promise<Server> {
   try {
+    validateEnv();
     await prisma.$connect();
     logger.info('Database connected successfully');
 
