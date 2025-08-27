@@ -1,67 +1,30 @@
-### Authentication - Login Endpoints
-### Environment variables from ../environments.env
+@baseUrl = http://localhost:3001
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
-
-###
-### Login as Admin
-POST {{apiUrl}}/auth/login
+### Login as admin (from seed)
+POST {{baseUrl}}/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "{{$dotenv adminEmail}}",
-  "password": "{{$dotenv adminPassword}}"
+  "identifier": "admin@digitallibrary.com",
+  "password": "password123"
 }
 
-###
-### Login as Librarian  
-POST {{apiUrl}}/auth/login
-Content-Type: application/json
+> {% 
+// Save tokens from response for subsequent requests
+try {
+  if (response.status === 200) {
+    const body = JSON.parse(response.body);
+    const tokens = body?.data?.tokens || body?.tokens;
+    if (tokens && tokens.accessToken && tokens.refreshToken) {
+      client.global.set("accessToken", tokens.accessToken);
+      client.global.set("refreshToken", tokens.refreshToken);
+      client.log("Saved accessToken and refreshToken to globals");
+    }
+  }
+} catch (e) {}
+%}
 
-{
-  "email": "{{$dotenv librarianEmail}}",
-  "password": "{{$dotenv librarianPassword}}"
-}
+### Current user (uses cookie or header)
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer {{accessToken}}
 
-###
-### Login as Regular User (John)
-POST {{apiUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "{{$dotenv userEmail}}",
-  "password": "{{$dotenv userPassword}}"
-}
-
-###
-### Login as Regular User (Alice)
-POST {{apiUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "{{$dotenv aliceEmail}}",
-  "password": "{{$dotenv alicePassword}}"
-}
-
-###
-### Login with Invalid Credentials (Error Test)
-POST {{apiUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "invalid@example.com",
-  "password": "wrongpassword"
-}
-
-###
-### Login with Missing Fields (Validation Test)
-POST {{apiUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "email": "{{$dotenv userEmail}}"
-}
-
-### Copy token from successful login response above:
-### @authToken = YOUR_ACCESS_TOKEN_HERE

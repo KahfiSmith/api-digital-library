@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:3001
+
+### Admin: Stats
+GET {{baseUrl}}/api/v1/admin/stats
+
+### Admin: List users (save first user id)
+GET {{baseUrl}}/api/v1/admin/users?limit=5
+
+> {%
+try {
+  if (response.status === 200) {
+    const body = JSON.parse(response.body);
+    const users = body?.data || body?.users || [];
+    if (Array.isArray(users) && users.length > 0) {
+      client.global.set("admin_user_id", users[0].id);
+      client.log("Saved admin_user_id=" + users[0].id);
+    }
+  }
+} catch (e) {}
+%}
+
+### Admin: Update user status (toggle)
+PUT {{baseUrl}}/api/v1/admin/users/{{admin_user_id}}/status
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### Admin: Recent activity
+GET {{baseUrl}}/api/v1/admin/recent?limit=5
+
+### Admin: Health
+GET {{baseUrl}}/api/v1/admin/health
+

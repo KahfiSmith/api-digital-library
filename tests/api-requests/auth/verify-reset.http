@@ -1,0 +1,73 @@
+@baseUrl = http://localhost:3001
+
+### 1) Register a new user (captures verification token)
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "verifyuser{{$timestamp}}",
+  "email": "verify+{{$timestamp}}@example.com",
+  "password": "Password123!",
+  "firstName": "Verify",
+  "lastName": "User"
+}
+
+> {%
+// Capture email and verification token for next request
+try {
+  const body = JSON.parse(response.body);
+  const data = body?.data;
+  if (data?.verification) {
+    client.global.set("verify_tokenId", data.verification.tokenId);
+    if (data.verification.token) client.global.set("verify_token", data.verification.token);
+    client.log("Saved verify_tokenId and verify_token (dev only)");
+  }
+  if (data?.user?.email) {
+    client.global.set("verify_email", data.user.email);
+    client.log("Saved verify_email=" + data.user.email);
+  }
+} catch (e) {
+  client.log("Failed to parse register response: " + e.message);
+}
+%}
+
+### 2) Verify email (uses captured tokenId/token)
+POST {{baseUrl}}/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "{{verify_tokenId}}",
+  "token": "{{verify_token}}"
+}
+
+### 3) Request password reset (uses captured email)
+POST {{baseUrl}}/api/v1/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "{{verify_email}}"
+}
+
+> {%
+// Capture reset token in dev for convenience
+try {
+  const body = JSON.parse(response.body);
+  const reset = body?.data?.reset;
+  if (reset) {
+    client.global.set("reset_tokenId", reset.tokenId);
+    client.global.set("reset_token", reset.token);
+    client.log("Saved reset_tokenId and reset_token (dev only)");
+  }
+} catch (e) {}
+%}
+
+### 4) Reset password (uses captured reset token)
+POST {{baseUrl}}/api/v1/auth/reset-password
+Content-Type: application/json
+
+{
+  "tokenId": "{{reset_tokenId}}",
+  "token": "{{reset_token}}",
+  "newPassword": "NewPassword123!"
+}
+

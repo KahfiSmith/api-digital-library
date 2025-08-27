@@ -1,0 +1,49 @@
+@baseUrl = http://localhost:3001
+
+### Fetch one book and save its id to {{bookId}}
+GET {{baseUrl}}/api/v1/books?limit=1
+
+> {%
+try {
+  if (response.status === 200) {
+    const body = JSON.parse(response.body);
+    const items = body?.data || [];
+    if (Array.isArray(items) && items.length > 0) {
+      client.global.set("bookId", items[0].id);
+      client.log("Saved bookId=" + items[0].id);
+    } else {
+      client.log("No books found. Create one first, then re-run.");
+    }
+  }
+} catch (e) {}
+%}
+
+### Upload book cover (ADMIN/LIBRARIAN only)
+# Prereqs:
+# - Login as admin (auth/login.http)
+# - Ensure {{bookId}} is set above, or replace it manually
+# - Replace the file path below with an existing image on your machine
+
+POST {{baseUrl}}/api/v1/books/{{bookId}}/cover
+Content-Type: multipart/form-data; boundary=----RestClientBoundary
+
+------RestClientBoundary
+Content-Disposition: form-data; name="file"; filename="cover.png"
+Content-Type: image/png
+
+< ./path/to/your/cover.png
+------RestClientBoundary--
+
+### Upload book PDF (ADMIN/LIBRARIAN only)
+# Replace with a real PDF file path
+
+POST {{baseUrl}}/api/v1/books/{{bookId}}/pdf
+Content-Type: multipart/form-data; boundary=----RestClientBoundary
+
+------RestClientBoundary
+Content-Disposition: form-data; name="file"; filename="book.pdf"
+Content-Type: application/pdf
+
+< ./path/to/your/book.pdf
+------RestClientBoundary--
+

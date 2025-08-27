@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:3001
+
+### Get all lists (grouped)
+GET {{baseUrl}}/api/v1/lists
+
+### List FAVORITES
+GET {{baseUrl}}/api/v1/lists/FAVORITES?limit=5
+
+### Add to WISHLIST (replace with a real bookId)
+POST {{baseUrl}}/api/v1/lists/WISHLIST
+Content-Type: application/json
+
+{
+  "bookId": "<REPLACE_BOOK_ID>"
+}
+
+### Remove from WISHLIST (replace with a real bookId)
+DELETE {{baseUrl}}/api/v1/lists/WISHLIST/<REPLACE_BOOK_ID>
+

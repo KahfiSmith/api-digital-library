@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:3001
+
+### List all loans (admin only)
+GET {{baseUrl}}/api/v1/loans
+
+### Create a loan (replace with real IDs)
+POST {{baseUrl}}/api/v1/loans
+Content-Type: application/json
+
+{
+  "userId": "<REPLACE_USER_ID>",
+  "bookId": "<REPLACE_BOOK_ID>"
+}
+
+### Return a loan (replace :id)
+PUT {{baseUrl}}/api/v1/loans/{{loanId}}/return
+
+### Loans by user (replace :userId)
+GET {{baseUrl}}/api/v1/loans/user/{{userId}}
+

@@ -1,0 +1,17 @@
+@baseUrl = http://localhost:3001
+
+### Upload avatar for current user
+# Prereqs:
+# - Login first using auth/login.http so cookies are set (or add Authorization header)
+# - Replace the file path below with an existing image on your machine
+
+POST {{baseUrl}}/api/v1/users/profile/avatar
+Content-Type: multipart/form-data; boundary=----RestClientBoundary
+
+------RestClientBoundary
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< ./path/to/your/avatar.png
+------RestClientBoundary--
+

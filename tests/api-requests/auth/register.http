@@ -1,67 +1,60 @@
-### Authentication - Registration Endpoints
-### Environment variables from ../environments.env
+@baseUrl = http://localhost:3001
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
-
-###
-### Register New User
-POST {{apiUrl}}/auth/register
+### Register new user (unique via timestamp)
+POST {{baseUrl}}/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "username": "newuser_{{$timestamp}}",
-  "email": "newuser_{{$timestamp}}@example.com",
-  "password": "SecurePassword123!",
-  "firstName": "New",
-  "lastName": "User"
-}
-
-###
-### Register with Existing Email (Error Test)
-POST {{apiUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "duplicate_user",
-  "email": "{{$dotenv userEmail}}",
+  "username": "testuser{{$timestamp}}",
+  "email": "test+{{$timestamp}}@example.com",
   "password": "Password123!",
-  "firstName": "Duplicate",
+  "firstName": "Test",
   "lastName": "User"
 }
 
-###
-### Register with Weak Password (Validation Test)
-POST {{apiUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "weakpass_user",
-  "email": "weakpass@example.com",
-  "password": "123",
-  "firstName": "Weak",
-  "lastName": "Password"
+> {% 
+// Save tokens from response for subsequent requests (VS Code REST Client)
+try {
+  if (response.status === 201 || response.status === 200) {
+    const body = JSON.parse(response.body);
+    const tokens = body?.data?.tokens || body?.tokens;
+    if (tokens && tokens.accessToken && tokens.refreshToken) {
+      client.global.set("accessToken", tokens.accessToken);
+      client.global.set("refreshToken", tokens.refreshToken);
+      client.log("Saved accessToken and refreshToken to globals");
+    } else {
+      client.log("Tokens not found in response body");
+    }
+  }
+} catch (e) {
+  client.log("Failed to parse JSON response: " + e.message);
 }
+%}
 
-###
-### Register with Missing Fields (Validation Test)
-POST {{apiUrl}}/auth/register
-Content-Type: application/json
+### Get current user using cookie (no header needed)
+GET {{baseUrl}}/api/v1/auth/me
 
-{
-  "email": "incomplete@example.com",
-  "password": "ValidPassword123!"
+### Refresh token (uses cookie by default)
+POST {{baseUrl}}/api/v1/auth/refresh
+
+> {% 
+// Rotate tokens (update globals)
+try {
+  if (response.status === 200) {
+    const body = JSON.parse(response.body);
+    const tokens = body?.data?.tokens || body?.tokens;
+    if (tokens && tokens.accessToken && tokens.refreshToken) {
+      client.global.set("accessToken", tokens.accessToken);
+      client.global.set("refreshToken", tokens.refreshToken);
+      client.log("Rotated tokens and updated globals");
+    } else {
+      client.log("Tokens not found in refresh response body");
+    }
+  }
+} catch (e) {
+  client.log("Failed to parse JSON response: " + e.message);
 }
+%}
 
-###
-### Register with Invalid Email Format (Validation Test)
-POST {{apiUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "invalid_email_user",
-  "email": "not-an-email",
-  "password": "ValidPassword123!",
-  "firstName": "Invalid",
-  "lastName": "Email"
-}
+### Logout (uses refresh cookie; no body needed)
+POST {{baseUrl}}/api/v1/auth/logout

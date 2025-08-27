@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:3001
+
+### List categories
+GET {{baseUrl}}/api/v1/categories?limit=10
+
+### Create category (admin required)
+POST {{baseUrl}}/api/v1/categories
+Content-Type: application/json
+
+{
+  "name": "New Category {{$timestamp}}",
+  "description": "Created via REST Client"
+}
+
+### Update category (replace :id)
+PUT {{baseUrl}}/api/v1/categories/{{categoryId}}
+Content-Type: application/json
+
+{
+  "description": "Updated description"
+}
+
+### Delete category (replace :id)
+DELETE {{baseUrl}}/api/v1/categories/{{categoryId}}
+
