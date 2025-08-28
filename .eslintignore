@@ -8,3 +8,6 @@ prisma/migrations/
 .env
 .env.*
 *.log
+**/*.http
+**/*.rest
+**/*.har

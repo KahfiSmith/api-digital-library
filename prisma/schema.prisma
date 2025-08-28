@@ -30,6 +30,23 @@ enum ListType {
   COMPLETED
 }
 
+enum NotificationType {
+  BOOK_DUE_REMINDER
+  BOOK_OVERDUE
+  NEW_BOOK_AVAILABLE
+  RESERVATION_READY
+  REVIEW_REPLY
+  SYSTEM_ANNOUNCEMENT
+}
+
+enum ReservationStatus {
+  PENDING
+  READY
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
 model User {
   id            String   @id @default(cuid())
   username      String   @unique
@@ -48,7 +65,11 @@ model User {
   bookLoans    BookLoan[]
   bookReviews  BookReview[]
   bookLists    UserBookList[]
+  bookReservations BookReservation[]
+  notifications Notification[]
   refreshTokens RefreshToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -95,6 +116,7 @@ model Book {
   bookLoans   BookLoan[]
   bookReviews BookReview[]
   bookLists   UserBookList[]
+  bookReservations BookReservation[]
 
   @@map("books")
 }
@@ -192,4 +214,43 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("password_reset_tokens")
+}
+
+model BookReservation {
+  id               String            @id @default(cuid())
+  userId           String            @map("user_id")
+  bookId           String            @map("book_id")
+  status           ReservationStatus @default(PENDING)
+  reservedAt       DateTime          @default(now()) @map("reserved_at")
+  expiresAt        DateTime          @map("expires_at")
+  fulfilledAt      DateTime?         @map("fulfilled_at")
+  cancelledAt      DateTime?         @map("cancelled_at")
+  priority         Int               @default(0) // Queue priority
+  notes            String?
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@map("book_reservations")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String           @map("user_id")
+  type        NotificationType
+  title       String
+  message     String
+  metadata    Json?            // Additional data (bookId, loanId, etc.)
+  isRead      Boolean          @default(false) @map("is_read")
+  readAt      DateTime?        @map("read_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }

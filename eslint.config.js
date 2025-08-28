@@ -131,7 +131,11 @@ export default [
       '*.config.js',
       'coverage/**',
       'logs/**',
-      'uploads/**'
+      'uploads/**',
+      // Ignore REST Client / HTTP request files so ESLint doesn't parse them
+      '**/*.http',
+      '**/*.rest',
+      '**/*.har'
     ]
   }
 ];

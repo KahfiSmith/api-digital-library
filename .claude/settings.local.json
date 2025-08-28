@@ -10,7 +10,15 @@
       "Bash(mv:*)",
       "Bash(pnpm db:generate:*)",
       "Bash(pnpm db:migrate:*)",
-      "Bash(timeout 10 pnpm dev)"
+      "Bash(timeout 10 pnpm dev)",
+      "Bash(pnpm dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(pnpm prisma:*)",
+      "Bash(curl:*)",
+      "Bash(echo $NODE_ENV)",
+      "Bash(node:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
