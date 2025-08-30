@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import 'express-async-errors';
 import path from 'path';
+import swaggerUi from 'swagger-ui-express';
 
 import { logger } from '@/utils/logger';
 import { errorHandler } from '@/middleware/errorHandler';
@@ -20,6 +21,12 @@ import adminRoutes from '@/routes/admin';
 import reviewRoutes from '@/routes/reviews';
 import listRoutes from '@/routes/lists';
 import searchRoutes from '@/routes/search';
+import notificationRoutes from '@/routes/notifications';
+import reservationRoutes from '@/routes/reservations';
+import uploadRoutes from '@/routes/upload';
+import emailRoutes from '@/routes/email';
+import cronRoutes from '@/routes/cron';
+import recommendationRoutes from '@/routes/recommendations';
 import { openapiSpec, swaggerHtml } from '@/docs/openapi';
 import { requestId } from '@/middleware/requestId';
 
@@ -62,13 +69,22 @@ app.get('/health', (req, res) => {
   });
 });
 
-// OpenAPI docs (no extra deps): JSON and Swagger UI via CDN
+// OpenAPI docs
 app.get('/api/v1/openapi.json', (req, res) => {
   res.json(openapiSpec);
 });
 app.get('/api/v1/docs', (req, res) => {
   res.type('html').send(swaggerHtml());
 });
+
+// Swagger UI
+app.use('/api/v1/swagger', swaggerUi.serve, swaggerUi.setup(openapiSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Digital Library API Documentation",
+  swaggerOptions: {
+    persistAuthorization: true,
+  }
+}));
 
 app.use('/api/v1', indexRoutes);
 const authLimiter = rateLimit({ windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000), max: 20 });
@@ -81,6 +97,12 @@ app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/lists', listRoutes);
 app.use('/api/v1/search', searchRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/reservations', reservationRoutes);
+app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/email', emailRoutes);
+app.use('/api/v1/cron', cronRoutes);
+app.use('/api/v1/recommendations', recommendationRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

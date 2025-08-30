@@ -18,7 +18,13 @@
       "Bash(echo $NODE_ENV)",
       "Bash(node:*)",
       "Bash(pnpm tsc:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run build:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
