@@ -15,6 +15,11 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Safety check to prevent response already sent errors
+  if (res.headersSent) {
+    return next(err);
+  }
+
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
@@ -30,18 +35,42 @@ export const errorHandler = (
   // Prisma error mapping
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2002') {
-      err = new AppError('Duplicate value violates unique constraint', 409);
+      const customError = err as CustomError;
+      customError.message = 'Duplicate value violates unique constraint';
+      customError.statusCode = 409;
+      customError.status = 'fail';
     } else if (err.code === 'P2025') {
-      err = new AppError('Resource not found', 404);
+      const customError = err as CustomError;
+      customError.message = 'Resource not found';
+      customError.statusCode = 404;
+      customError.status = 'fail';
     } else {
-      err = new AppError('Database error', 400);
+      const customError = err as CustomError;
+      customError.message = 'Database operation failed';
+      customError.statusCode = 400;
+      customError.status = 'fail';
     }
+  }
+
+  // Handle other Prisma errors
+  if (err instanceof Prisma.PrismaClientValidationError) {
+    const customError = err as CustomError;
+    customError.message = 'Invalid data provided';
+    customError.statusCode = 400;
+    customError.status = 'fail';
+  }
+
+  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+    const customError = err as CustomError;
+    customError.message = 'Database connection error';
+    customError.statusCode = 500;
+    customError.status = 'error';
   }
 
   if (process.env.NODE_ENV === 'development') {
     res.status(err.statusCode || 500).json({
       status: err.status,
-      error: err,
+      error: err.message,
       message: err.message,
       stack: err.stack
     });

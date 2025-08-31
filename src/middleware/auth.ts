@@ -26,7 +26,9 @@ export function authenticateJWT(req: Request, res: Response, next: NextFunction)
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    req.user = decoded;
+    // Ensure backward compatibility: some controllers use req.user.id
+    // while tokens carry userId. Alias id -> userId if missing.
+    req.user = { ...(decoded as any), id: (decoded as any).id ?? (decoded as any).userId } as JWTPayload;
     next();
   } catch (err) {
     res.status(401).json({ status: 'error', message: 'Unauthorized: invalid token' });

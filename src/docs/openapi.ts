@@ -1,3 +1,5 @@
+import swaggerUi from 'swagger-ui-express';
+
 export const openapiSpec = {
   openapi: '3.0.3',
   info: {
