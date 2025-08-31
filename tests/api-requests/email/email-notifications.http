@@ -1,0 +1,217 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+
+### Register and Login First (if needed)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "admin123",
+  "email": "admin@example.com", 
+  "password": "Password123!",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+
+### Login to get admin token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Password123!"
+}
+
+###
+### EMAIL NOTIFICATION API TESTS
+###
+
+### 1. Test email configuration (Admin only)
+POST {{baseUrl}}/email/test
+Authorization: Bearer {{token}}
+
+### 2. Send due date reminders (Admin/Librarian)
+POST {{baseUrl}}/email/due-date-reminders
+Authorization: Bearer {{token}}
+
+### 3. Send overdue notifications (Admin/Librarian)
+POST {{baseUrl}}/email/overdue-notifications
+Authorization: Bearer {{token}}
+
+### 4. Send new book notifications (Admin/Librarian)
+POST {{baseUrl}}/email/new-book-notifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here"
+}
+
+### 5. Send system announcement to all users (Admin only)
+POST {{baseUrl}}/email/system-announcement
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Library System Maintenance",
+  "message": "Dear users,<br><br>We will be performing system maintenance on Sunday from 2 AM to 6 AM. During this time, the library system will be unavailable.<br><br>We apologize for any inconvenience and thank you for your understanding.<br><br>Best regards,<br>Library Management Team"
+}
+
+### 6. Send system announcement to specific users (Admin only)
+POST {{baseUrl}}/email/system-announcement
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Overdue Book Reminder",
+  "message": "You have overdue books. Please return them as soon as possible to avoid additional fees.",
+  "targetUserIds": ["user1_id", "user2_id", "user3_id"]
+}
+
+### 7. Send reservation ready notification (Admin/Librarian)
+POST {{baseUrl}}/email/reservation-ready
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reservationId": "reservation_id_here"
+}
+
+### 8. Send welcome email to new user (Admin/Librarian)
+POST {{baseUrl}}/email/welcome
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": "new_user_id_here"
+}
+
+### 9. Run daily email tasks (Admin only)
+POST {{baseUrl}}/email/daily-tasks
+Authorization: Bearer {{token}}
+
+### 10. Get user email preferences (Any authenticated user)
+GET {{baseUrl}}/email/preferences
+Authorization: Bearer {{token}}
+
+###
+### EMAIL TEMPLATES TESTING
+###
+
+### 11. Test notification with book due soon
+POST {{baseUrl}}/email/due-date-reminders
+Authorization: Bearer {{token}}
+# Note: This will only send emails if there are actual loans due in the next 2 days
+
+### 12. Test new book notification (requires users with wishlists in the same category)
+POST {{baseUrl}}/email/new-book-notifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "cm123example456"
+}
+
+### 13. Complex system announcement with HTML formatting
+POST {{baseUrl}}/email/system-announcement
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "New Features Available! 🎉",
+  "message": "<h3>Exciting Updates!</h3><p>We're pleased to announce several new features:</p><ul><li><strong>Book Reservations:</strong> Reserve books when they're unavailable</li><li><strong>Advanced Search:</strong> Filter by rating, availability, and more</li><li><strong>File Uploads:</strong> Enhanced book covers and PDF support</li><li><strong>Email Notifications:</strong> Stay updated with automated reminders</li></ul><p>Explore these features today and enhance your library experience!</p><p><em>Happy Reading!</em><br>Your Library Team 📚</p>"
+}
+
+###
+### ERROR SCENARIOS
+###
+
+### 14. Try to send test email without admin role (should fail)
+POST {{baseUrl}}/email/test
+
+### 15. Send system announcement without title (should fail)
+POST {{baseUrl}}/email/system-announcement
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "message": "This should fail because title is missing"
+}
+
+### 16. Send new book notification with invalid book ID (should fail)
+POST {{baseUrl}}/email/new-book-notifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "invalid_book_id"
+}
+
+### 17. Send reservation notification without reservation ID (should fail)
+POST {{baseUrl}}/email/reservation-ready
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{}
+
+###
+### INTEGRATION SCENARIOS
+###
+
+### 18. Complete workflow: Create book → Send notifications
+### First create a book
+POST {{baseUrl}}/books
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "New JavaScript Guide 2024",
+  "subtitle": "Modern Development Practices",
+  "authors": ["Jane Developer"],
+  "description": "A comprehensive guide to modern JavaScript development",
+  "publisher": "Tech Books Publishing",
+  "publishedDate": "2024-01-01",
+  "categoryId": "programming_category_id",
+  "tags": ["javascript", "programming", "web-development"],
+  "language": "en",
+  "totalCopies": 5,
+  "availableCopies": 5
+}
+
+### Then send new book notifications
+POST {{baseUrl}}/email/new-book-notifications
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "newly_created_book_id"
+}
+
+###
+### BULK EMAIL TESTING
+###
+
+### 19. Send announcement to large user base
+POST {{baseUrl}}/email/system-announcement
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Monthly Library Newsletter",
+  "message": "<h2>📚 Monthly Library Update</h2><p>Dear Library Members,</p><p>Here's what's new this month:</p><ul><li><strong>New Arrivals:</strong> 50+ new books added across all categories</li><li><strong>Popular This Month:</strong> Technology and Science Fiction books are trending</li><li><strong>Upcoming Events:</strong> Book reading sessions every Saturday at 2 PM</li><li><strong>System Updates:</strong> Enhanced search and reservation features now available</li></ul><p>Thank you for being part of our library community!</p><p>Visit us to discover your next great read.</p><p>Best regards,<br>Library Management Team</p>"
+}
+
+###
+### ENVIRONMENT SETUP NOTES
+###
+### To test email functionality, you need to set up SMTP configuration in your .env file:
+### SMTP_HOST=smtp.gmail.com (or your SMTP server)
+### SMTP_PORT=587
+### SMTP_USER=your-email@gmail.com
+### SMTP_PASS=your-app-password
+### SMTP_SECURE=false
+### SMTP_FROM=noreply@yourlibrary.com
+### TEST_EMAIL=your-test-email@example.com
+###
+### Without SMTP setup, emails will be logged to console instead of being sent
+###

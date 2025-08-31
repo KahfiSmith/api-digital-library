@@ -1,12 +1,18 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
-### 1) Register a new user (captures verification token)
-POST {{baseUrl}}/api/v1/auth/register
+###
+# Email Verification and Password Reset Flow
+# INSTRUCTIONS: Run these requests in sequence (1->2->3->4)
+# Each request captures variables needed for the next step
+###
+
+### 1) Register a new user (captures verification token and email)
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "verifyuser{{$timestamp}}",
-  "email": "verify+{{$timestamp}}@example.com",
+  "username": "verifyuser{{$randomInt}}",
+  "email": "verify{{$randomInt}}@example.com",
   "password": "Password123!",
   "firstName": "Verify",
   "lastName": "User"
@@ -14,60 +20,209 @@ Content-Type: application/json
 
 > {%
 // Capture email and verification token for next request
+client.log("=== REGISTER RESPONSE DEBUG ===");
+client.log("Response status: " + response.status);
+client.log("Full response body: " + JSON.stringify(response.body, null, 2));
+
 try {
-  const body = JSON.parse(response.body);
-  const data = body?.data;
-  if (data?.verification) {
-    client.global.set("verify_tokenId", data.verification.tokenId);
-    if (data.verification.token) client.global.set("verify_token", data.verification.token);
-    client.log("Saved verify_tokenId and verify_token (dev only)");
-  }
-  if (data?.user?.email) {
-    client.global.set("verify_email", data.user.email);
-    client.log("Saved verify_email=" + data.user.email);
+  if (response.status === 201 || response.status === 200) {
+    const body = response.body;
+    
+    // Capture user email
+    if (body.data && body.data.user && body.data.user.email) {
+      client.global.set("verify_email", body.data.user.email);
+      client.log("✅ Saved verify_email: " + body.data.user.email);
+    } else {
+      client.log("❌ User email not found in response");
+    }
+    
+    // Capture verification tokens
+    if (body.data && body.data.verification) {
+      const verification = body.data.verification;
+      
+      if (verification.tokenId) {
+        client.global.set("verify_tokenId", verification.tokenId);
+        client.log("✅ Saved verify_tokenId: " + verification.tokenId);
+      }
+      
+      if (verification.token) {
+        client.global.set("verify_token", verification.token);
+        client.log("✅ Saved verify_token: " + verification.token);
+      }
+      
+      if (verification.link) {
+        client.log("📧 Verification link: " + verification.link);
+      }
+    } else {
+      client.log("❌ Verification data not found in response");
+    }
+  } else {
+    client.log("❌ Registration failed with status: " + response.status);
   }
 } catch (e) {
-  client.log("Failed to parse register response: " + e.message);
+  client.log("❌ Error processing register response: " + e.message);
+  client.log("Raw response: " + JSON.stringify(response, null, 2));
 }
+client.log("=== END DEBUG ===");
 %}
 
 ### 2) Verify email (uses captured tokenId/token)
-POST {{baseUrl}}/api/v1/auth/verify-email
+# Make sure to run step 1 first to capture the tokens
+POST {{baseUrl}}/auth/verify-email
 Content-Type: application/json
 
 {
-  "tokenId": "{{verify_tokenId}}",
-  "token": "{{verify_token}}"
-}
-
-### 3) Request password reset (uses captured email)
-POST {{baseUrl}}/api/v1/auth/request-password-reset
-Content-Type: application/json
-
-{
-  "email": "{{verify_email}}"
+  "tokenId": "your_token_id_here",
+  "token": "your_verification_token_here"
 }
 
 > {%
-// Capture reset token in dev for convenience
-try {
-  const body = JSON.parse(response.body);
-  const reset = body?.data?.reset;
-  if (reset) {
-    client.global.set("reset_tokenId", reset.tokenId);
-    client.global.set("reset_token", reset.token);
-    client.log("Saved reset_tokenId and reset_token (dev only)");
-  }
-} catch (e) {}
+client.log("=== VERIFY EMAIL DEBUG ===");
+client.log("Used tokenId: " + client.global.get("verify_tokenId"));
+client.log("Used token: " + client.global.get("verify_token"));
+client.log("Response: " + JSON.stringify(response.body, null, 2));
+client.log("=== END DEBUG ===");
 %}
 
-### 4) Reset password (uses captured reset token)
-POST {{baseUrl}}/api/v1/auth/reset-password
+### 3) Request password reset (uses captured email)
+# Make sure step 1 completed successfully to capture the email
+POST {{baseUrl}}/auth/request-password-reset
 Content-Type: application/json
 
 {
-  "tokenId": "{{reset_tokenId}}",
-  "token": "{{reset_token}}",
+  "email": "your_email_here"
+}
+
+> {%
+// Capture reset token for development/testing
+client.log("=== PASSWORD RESET REQUEST DEBUG ===");
+client.log("Used email: " + client.global.get("verify_email"));
+client.log("Response: " + JSON.stringify(response.body, null, 2));
+
+try {
+  if (response.status === 200) {
+    const body = response.body;
+    
+    // In development, reset tokens are included in response
+    if (body.data && body.data.reset) {
+      const reset = body.data.reset;
+      
+      if (reset.tokenId) {
+        client.global.set("reset_tokenId", reset.tokenId);
+        client.log("✅ Saved reset_tokenId: " + reset.tokenId);
+      }
+      
+      if (reset.token) {
+        client.global.set("reset_token", reset.token);
+        client.log("✅ Saved reset_token: " + reset.token);
+      }
+      
+      if (reset.link) {
+        client.log("📧 Reset link: " + reset.link);
+      }
+    } else {
+      client.log("ℹ️ Reset tokens not included (production mode or user not found)");
+    }
+  }
+} catch (e) {
+  client.log("❌ Error processing password reset response: " + e.message);
+}
+client.log("=== END DEBUG ===");
+%}
+
+### 4) Reset password (uses captured reset token)
+# Make sure step 3 completed successfully to capture the reset tokens
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "tokenId": "your_reset_token_id_here",
+  "token": "your_reset_token_here",
   "newPassword": "NewPassword123!"
 }
 
+> {%
+client.log("=== PASSWORD RESET DEBUG ===");
+client.log("Used reset_tokenId: " + client.global.get("reset_tokenId"));
+client.log("Used reset_token: " + client.global.get("reset_token"));
+client.log("Response: " + JSON.stringify(response.body, null, 2));
+client.log("=== END DEBUG ===");
+%}
+
+### 5) Test login with new password
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "your_email_here",
+  "password": "NewPassword123!"
+}
+
+###
+### ALTERNATIVE - Manual Testing (if variables still don't work)
+### Copy and paste tokens manually from responses
+###
+
+### Manual 1) Register user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "manualuser{{$randomInt}}",
+  "email": "manual{{$randomInt}}@example.com",
+  "password": "Password123!",
+  "firstName": "Manual",
+  "lastName": "User"
+}
+
+### Manual 2) Verify email - PASTE tokenId and token from register response
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_TOKENID_HERE",
+  "token": "PASTE_TOKEN_HERE"
+}
+
+### Manual 3) Request password reset - USE same email from register
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "manual123@example.com"
+}
+
+### Manual 4) Reset password - PASTE reset tokens from request-password-reset response
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_RESET_TOKENID_HERE",
+  "token": "PASTE_RESET_TOKEN_HERE",
+  "newPassword": "NewPassword123!"
+}
+
+###
+### TESTING WITH EXISTING USER
+###
+
+### Test password reset for known user
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "test123@example.com"
+}
+
+### Debug: Show all captured variables
+GET {{baseUrl}}/auth/me
+
+> {%
+client.log("=== CURRENT VARIABLES ===");
+client.log("verify_email: " + client.global.get("verify_email"));
+client.log("verify_tokenId: " + client.global.get("verify_tokenId"));
+client.log("verify_token: " + client.global.get("verify_token"));
+client.log("reset_tokenId: " + client.global.get("reset_tokenId"));
+client.log("reset_token: " + client.global.get("reset_token"));
+client.log("=== END VARIABLES ===");
+%}

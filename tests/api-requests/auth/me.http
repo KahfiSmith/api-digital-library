@@ -1,0 +1,11 @@
+@baseUrl = http://localhost:3001
+
+### Get current user (uses auth cookie automatically)
+GET {{baseUrl}}/api/v1/auth/me
+
+### Get current user with Authorization header
+GET {{baseUrl}}/api/v1/auth/me
+Authorization: Bearer your_access_token_here
+
+### Get current user without authentication (should fail with 401)
+GET {{baseUrl}}/api/v1/auth/me

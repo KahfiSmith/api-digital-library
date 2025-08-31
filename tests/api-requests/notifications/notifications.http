@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3001
+
+### Get all notifications
+GET {{baseUrl}}/api/v1/notifications?page=1&limit=20
+
+### Get only unread notifications
+GET {{baseUrl}}/api/v1/notifications?unreadOnly=true&page=1&limit=10
+
+### Get unread count
+GET {{baseUrl}}/api/v1/notifications/unread-count
+
+### Mark notification as read
+PATCH {{baseUrl}}/api/v1/notifications/notification_id_here/read
+
+### Mark all notifications as read
+PATCH {{baseUrl}}/api/v1/notifications/read-all
+
+### Delete a notification
+DELETE {{baseUrl}}/api/v1/notifications/notification_id_here
+
+### Delete all notifications
+DELETE {{baseUrl}}/api/v1/notifications
+
+### Create system announcement (admin/librarian only)
+POST {{baseUrl}}/api/v1/notifications/system-announcement
+Content-Type: application/json
+
+{
+  "title": "Library Maintenance Notice",
+  "message": "The library will be closed for maintenance on Sunday, December 10th from 9 AM to 6 PM. All digital services will remain available."
+}
+
+### Create custom notification (admin/librarian only)
+POST {{baseUrl}}/api/v1/notifications/custom
+Content-Type: application/json
+
+{
+  "userId": "user_id_here",
+  "type": "BOOK_DUE_REMINDER",
+  "title": "Book Due Reminder",
+  "message": "Your book 'JavaScript: The Good Parts' is due tomorrow. Please return it on time.",
+  "metadata": {
+    "bookId": "book_id_here",
+    "loanId": "loan_id_here",
+    "dueDate": "2024-01-15T00:00:00.000Z"
+  }
+}
+
+### Test invalid notification type (should fail with 400)
+POST {{baseUrl}}/api/v1/notifications/custom
+Content-Type: application/json
+
+{
+  "userId": "user_id_here",
+  "type": "INVALID_TYPE",
+  "title": "Test",
+  "message": "Test message"
+}
+
+### Test missing required fields (should fail with 400)
+POST {{baseUrl}}/api/v1/notifications/system-announcement
+Content-Type: application/json
+
+{
+  "title": "Missing message field"
+}

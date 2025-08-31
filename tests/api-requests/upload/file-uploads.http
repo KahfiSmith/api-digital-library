@@ -1,0 +1,220 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+
+### Register and Login First (if needed)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser123",
+  "email": "test123@example.com", 
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+### Login to get token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test123@example.com",
+  "password": "Password123!"
+}
+
+###
+### FILE UPLOAD API TESTS
+###
+
+### 1. Upload book cover (Admin/Librarian only)
+POST {{baseUrl}}/upload/book-cover
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="book-cover.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/book-cover.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 2. Upload book PDF (Admin/Librarian only)
+POST {{baseUrl}}/upload/book-pdf
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="sample-book.pdf"
+Content-Type: application/pdf
+
+< ./test-files/sample-book.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 3. Upload user avatar (Any authenticated user)
+POST {{baseUrl}}/upload/avatar
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< ./test-files/avatar.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 4. Upload general file (Admin/Librarian only)
+POST {{baseUrl}}/upload/general
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./test-files/document.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 5. Upload multiple files (Admin/Librarian only)
+POST {{baseUrl}}/upload/multiple
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="image1.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/image1.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="image2.png"
+Content-Type: image/png
+
+< ./test-files/image2.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="files"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./test-files/document.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+### INTEGRATION WITH BOOKS AND USERS
+###
+
+### 6. Create book with uploaded cover (using existing book endpoints)
+POST {{baseUrl}}/books
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Sample Book with Cover",
+  "authors": ["John Doe"],
+  "categoryId": "category_id_here",
+  "description": "A sample book with uploaded cover",
+  "coverUrl": "/public/uploads/covers/uploaded-cover-filename.jpg",
+  "pdfUrl": "/public/uploads/pdfs/uploaded-pdf-filename.pdf"
+}
+
+### 7. Update user profile with uploaded avatar
+PUT {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Updated First",
+  "lastName": "Updated Last",
+  "avatarUrl": "/public/uploads/avatars/uploaded-avatar-filename.png"
+}
+
+### 8. Update book cover via book endpoint
+POST {{baseUrl}}/books/book_id_here/cover
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="new-cover.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/new-cover.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 9. Update book PDF via book endpoint
+POST {{baseUrl}}/books/book_id_here/pdf
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="updated-book.pdf"
+Content-Type: application/pdf
+
+< ./test-files/updated-book.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 10. Update user avatar via user endpoint
+POST {{baseUrl}}/users/profile/avatar
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="profile-avatar.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/profile-avatar.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+### ERROR SCENARIOS
+###
+
+### 11. Upload without file (should fail)
+POST {{baseUrl}}/upload/book-cover
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 12. Upload invalid file type for book cover (should fail)
+POST {{baseUrl}}/upload/book-cover
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="document.txt"
+Content-Type: text/plain
+
+This is a text file, not an image
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 13. Upload without authentication (should fail)
+POST {{baseUrl}}/upload/book-cover
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="cover.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/cover.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 14. Upload as regular user to admin endpoint (should fail)
+POST {{baseUrl}}/upload/book-cover
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="cover.jpg"
+Content-Type: image/jpeg
+
+< ./test-files/cover.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+### NOTE: Creating test files
+### You'll need to create actual test files in a 'test-files' directory:
+### - book-cover.jpg (JPEG image, < 5MB)
+### - avatar.png (PNG image, < 2MB)
+### - sample-book.pdf (PDF file, < 50MB)
+### - document.pdf (PDF file, < 10MB)
+### - image1.jpg, image2.png (additional images)
+### 
+### Or modify the requests to point to actual files on your system
+###

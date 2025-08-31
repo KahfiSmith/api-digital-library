@@ -1,0 +1,6 @@
+### Get recommendation analytics (admin only)
+GET {{baseUrl}}/recommendations/analytics
+Authorization: Bearer {{adminToken}}
+
+### Health check for recommendations service
+GET {{baseUrl}}/recommendations/health

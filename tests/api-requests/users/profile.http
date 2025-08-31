@@ -1,106 +1,55 @@
-### Users - Profile Management
-### Environment variables from ../environments.env
+@baseUrl = http://localhost:3001
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
-@authToken = YOUR_TOKEN_HERE
+### Get current user profile (requires login)
+GET {{baseUrl}}/api/v1/users/profile
 
-###
-### Get Current User Profile
-GET {{apiUrl}}/users/profile
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-###
-### Update User Profile
-PUT {{apiUrl}}/users/profile
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-{
-  "firstName": "Updated First",
-  "lastName": "Updated Last",
-  "bio": "Updated bio information about the user",
-  "phoneNumber": "+1234567890",
-  "dateOfBirth": "1990-01-01T00:00:00.000Z"
-}
-
-###
-### Partial Profile Update
-PATCH {{apiUrl}}/users/profile
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-{
-  "bio": "Just updated my bio!"
-}
-
-###
-### Change Password
-PUT {{apiUrl}}/users/profile/password
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-{
-  "currentPassword": "{{$dotenv userPassword}}",
-  "newPassword": "NewSecurePassword123!",
-  "confirmPassword": "NewSecurePassword123!"
-}
-
-###
-### Upload Profile Picture
-POST {{apiUrl}}/users/profile/picture
-Content-Type: multipart/form-data; boundary=boundary
-Authorization: Bearer {{authToken}}
-
---boundary
-Content-Disposition: form-data; name="profilePicture"; filename="profile.jpg"
-Content-Type: image/jpeg
-
-< ./test-files/profile-picture.jpg
---boundary--
-
-###
-### Delete Profile Picture
-DELETE {{apiUrl}}/users/profile/picture
-Authorization: Bearer {{authToken}}
-
-###
-### Get User Profile by ID (Admin/Librarian only)
-GET {{apiUrl}}/users/550e8400-e29b-41d4-a716-446655440002
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-###
-### Update Profile without Authentication (Error Test)
-PUT {{apiUrl}}/users/profile
+### Update user profile
+PUT {{baseUrl}}/api/v1/users/profile
 Content-Type: application/json
 
 {
-  "firstName": "Unauthorized",
-  "lastName": "Update"
+  "firstName": "John Updated",
+  "lastName": "Doe Updated"
 }
 
-###
-### Invalid Password Change (Error Test)
-PUT {{apiUrl}}/users/profile/password
+### Upload avatar (requires form-data - replace with actual file path)
+POST {{baseUrl}}/api/v1/users/profile/avatar
+Content-Type: multipart/form-data
+
+### Change password
+PUT {{baseUrl}}/api/v1/users/profile/password
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+
+{
+  "currentPassword": "Password123!",
+  "newPassword": "NewPassword123!"
+}
+
+### Get all users (admin/librarian only)
+GET {{baseUrl}}/api/v1/users?page=1&limit=10
+
+### Search users (admin/librarian only)
+GET {{baseUrl}}/api/v1/users?search=john&page=1&limit=10
+
+### Get users sorted by username (admin/librarian only)
+GET {{baseUrl}}/api/v1/users?sortBy=username&sortOrder=asc&page=1&limit=10
+
+### Get user by ID (admin/librarian only)
+GET {{baseUrl}}/api/v1/users/user_id_here
+
+### Test invalid password change (should fail with 401)
+PUT {{baseUrl}}/api/v1/users/profile/password
+Content-Type: application/json
 
 {
   "currentPassword": "wrongpassword",
-  "newPassword": "NewPassword123!",
-  "confirmPassword": "NewPassword123!"
+  "newPassword": "NewPassword123!"
 }
 
-###
-### Password Mismatch (Validation Test)
-PUT {{apiUrl}}/users/profile/password
+### Test missing current password (should fail with 400)
+PUT {{baseUrl}}/api/v1/users/profile/password
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
 
 {
-  "currentPassword": "{{$dotenv userPassword}}",
-  "newPassword": "NewPassword123!",
-  "confirmPassword": "DifferentPassword123!"
+  "newPassword": "NewPassword123!"
 }

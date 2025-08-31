@@ -1,0 +1,168 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+
+### Register and Login First (if needed)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser123",
+  "email": "test123@example.com", 
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+### Login to get token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test123@example.com",
+  "password": "Password123!"
+}
+
+###
+### BOOK RESERVATIONS API TESTS
+###
+
+### 1. Create a new reservation
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here",
+  "notes": "Please hold this book for me, I'll pick it up tomorrow"
+}
+
+### 2. Get my reservations
+GET {{baseUrl}}/reservations/my
+Authorization: Bearer {{token}}
+
+### 3. Get my reservations with filters
+GET {{baseUrl}}/reservations/my?status=PENDING&page=1&limit=10
+Authorization: Bearer {{token}}
+
+### 4. Get queue position for a book
+GET {{baseUrl}}/reservations/queue/book_id_here/position
+Authorization: Bearer {{token}}
+
+### 5. Get specific reservation details
+GET {{baseUrl}}/reservations/reservation_id_here
+Authorization: Bearer {{token}}
+
+### 6. Update reservation notes (user)
+PATCH {{baseUrl}}/reservations/reservation_id_here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Updated notes - I'll pick up next week instead"
+}
+
+### 7. Cancel my reservation
+DELETE {{baseUrl}}/reservations/reservation_id_here/cancel
+Authorization: Bearer {{token}}
+
+###
+### ADMIN/LIBRARIAN ROUTES (require ADMIN or LIBRARIAN role)
+###
+
+### 8. Get all reservations (Admin/Librarian only)
+GET {{baseUrl}}/reservations
+Authorization: Bearer {{token}}
+
+### 9. Get all reservations with filters (Admin/Librarian only)
+GET {{baseUrl}}/reservations?status=PENDING&userId=user_id_here&page=1&limit=10
+Authorization: Bearer {{token}}
+
+### 10. Get book queue (Admin/Librarian only)
+GET {{baseUrl}}/reservations/book/book_id_here/queue
+Authorization: Bearer {{token}}
+
+### 11. Get book queue with filters (Admin/Librarian only)
+GET {{baseUrl}}/reservations/book/book_id_here/queue?status=READY&page=1&limit=5
+Authorization: Bearer {{token}}
+
+### 12. Update reservation status (Admin/Librarian only)
+PATCH {{baseUrl}}/reservations/reservation_id_here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "READY",
+  "notes": "Book is now available for pickup"
+}
+
+### 13. Process book queue (Admin/Librarian only)
+POST {{baseUrl}}/reservations/book/book_id_here/process-queue
+Authorization: Bearer {{token}}
+
+###
+### TYPICAL WORKFLOW EXAMPLES
+###
+
+### Example 1: User creates reservation for unavailable book
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "cm123example456",
+  "notes": "I need this for my research project"
+}
+
+### Example 2: Check position in queue
+GET {{baseUrl}}/reservations/queue/cm123example456/position
+Authorization: Bearer {{token}}
+
+### Example 3: Admin marks reservation as ready
+PATCH {{baseUrl}}/reservations/res_id_example
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "READY"
+}
+
+### Example 4: Admin processes queue when book becomes available
+POST {{baseUrl}}/reservations/book/cm123example456/process-queue
+Authorization: Bearer {{token}}
+
+###
+### ERROR SCENARIOS
+###
+
+### Try to reserve available book (should fail)
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "available_book_id",
+  "notes": "This should fail because book is available"
+}
+
+### Try to create duplicate reservation (should fail)
+POST {{baseUrl}}/reservations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bookId": "already_reserved_book_id",
+  "notes": "This should fail - already have active reservation"
+}
+
+### Try to cancel someone else's reservation (should fail for non-admin)
+DELETE {{baseUrl}}/reservations/someone_else_reservation_id/cancel
+Authorization: Bearer {{token}}
+
+### Try to update status as regular user (should fail)
+PATCH {{baseUrl}}/reservations/reservation_id_here
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "FULFILLED"
+}

@@ -1,0 +1,8 @@
+### Get trending books (no authentication required)
+GET {{baseUrl}}/recommendations/trending
+
+### Get trending books with limit
+GET {{baseUrl}}/recommendations/trending?limit=5
+
+### Get more trending books
+GET {{baseUrl}}/recommendations/trending?limit=20

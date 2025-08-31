@@ -1,0 +1,69 @@
+@baseUrl = http://localhost:3001
+
+### Get all user's lists grouped by type
+GET {{baseUrl}}/api/v1/lists
+
+### Get user's favorites list
+GET {{baseUrl}}/api/v1/lists/FAVORITES?page=1&limit=10
+
+### Get user's wishlist
+GET {{baseUrl}}/api/v1/lists/WISHLIST?page=1&limit=20
+
+### Get user's currently reading list
+GET {{baseUrl}}/api/v1/lists/READING
+
+### Get user's completed books list
+GET {{baseUrl}}/api/v1/lists/COMPLETED
+
+### Add book to favorites
+POST {{baseUrl}}/api/v1/lists/FAVORITES
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here"
+}
+
+### Add book to wishlist
+POST {{baseUrl}}/api/v1/lists/WISHLIST
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here"
+}
+
+### Add book to reading list
+POST {{baseUrl}}/api/v1/lists/READING
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here"
+}
+
+### Add book to completed list
+POST {{baseUrl}}/api/v1/lists/COMPLETED
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here"
+}
+
+### Remove book from favorites
+DELETE {{baseUrl}}/api/v1/lists/FAVORITES/book_id_here
+
+### Remove book from wishlist
+DELETE {{baseUrl}}/api/v1/lists/WISHLIST/book_id_here
+
+### Remove book from reading list
+DELETE {{baseUrl}}/api/v1/lists/READING/book_id_here
+
+### Remove book from completed list
+DELETE {{baseUrl}}/api/v1/lists/COMPLETED/book_id_here
+
+### Test invalid list type (should fail with 400)
+GET {{baseUrl}}/api/v1/lists/INVALID_TYPE
+
+### Test adding with missing bookId (should fail with 400)
+POST {{baseUrl}}/api/v1/lists/FAVORITES
+Content-Type: application/json
+
+{}

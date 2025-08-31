@@ -1,0 +1,10 @@
+@baseUrl = http://localhost:3001
+
+### Check due loans (run daily at 9 AM)
+POST {{baseUrl}}/api/v1/cron/check-due-loans
+
+### Check overdue loans (run daily at 10 AM)
+POST {{baseUrl}}/api/v1/cron/check-overdue-loans
+
+### Run all daily tasks (comprehensive daily check)
+POST {{baseUrl}}/api/v1/cron/daily-tasks

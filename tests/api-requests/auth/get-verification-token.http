@@ -1,0 +1,18 @@
+@baseUrl = http://localhost:3001
+
+### Register new user to get verification token
+# Note: Ubah username dan email untuk setiap pengujian baru
+POST {{baseUrl}}/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser_verify",
+  "email": "testverify@example.com",
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "Verify"
+}
+
+### Simpan respons registrasi
+# Response akan berisi verification.tokenId dan verification.token
+# yang diperlukan untuk pengujian endpoint verify-email

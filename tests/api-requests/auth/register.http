@@ -1,41 +1,22 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
-### Register new user (unique via timestamp)
-POST {{baseUrl}}/api/v1/auth/register
+### Register new user (change username/email for unique registration)
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser{{$timestamp}}",
-  "email": "test+{{$timestamp}}@example.com",
+  "username": "testuser123",
+  "email": "test123@example.com",
   "password": "Password123!",
   "firstName": "Test",
   "lastName": "User"
 }
 
-> {% 
-// Save tokens from response for subsequent requests (VS Code REST Client)
-try {
-  if (response.status === 201 || response.status === 200) {
-    const body = JSON.parse(response.body);
-    const tokens = body?.data?.tokens || body?.tokens;
-    if (tokens && tokens.accessToken && tokens.refreshToken) {
-      client.global.set("accessToken", tokens.accessToken);
-      client.global.set("refreshToken", tokens.refreshToken);
-      client.log("Saved accessToken and refreshToken to globals");
-    } else {
-      client.log("Tokens not found in response body");
-    }
-  }
-} catch (e) {
-  client.log("Failed to parse JSON response: " + e.message);
-}
-%}
-
 ### Get current user using cookie (no header needed)
-GET {{baseUrl}}/api/v1/auth/me
+GET {{baseUrl}}/auth/me
 
 ### Refresh token (uses cookie by default)
-POST {{baseUrl}}/api/v1/auth/refresh
+POST {{baseUrl}}/auth/refresh
 
 > {% 
 // Rotate tokens (update globals)
@@ -57,4 +38,4 @@ try {
 %}
 
 ### Logout (uses refresh cookie; no body needed)
-POST {{baseUrl}}/api/v1/auth/logout
+POST {{baseUrl}}/auth/logout

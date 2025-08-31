@@ -1,0 +1,35 @@
+@baseUrl = http://localhost:3001
+
+### PENTING: Untuk mendapatkan token verifikasi yang valid:
+# 1. Jalankan request di file 'get-verification-token.http' untuk mendaftar user baru
+# 2. Salin nilai tokenId dan token dari respons registration
+# 3. Gunakan nilai tersebut di request di bawah ini
+
+### Verify email via POST (body)
+POST {{baseUrl}}/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "cmeyblo9600032v4tqol6bhcn",
+  "token": "ddee159da17b3213d44052f67641afad37bf8fcfcc573716"
+}
+
+### Verify email via GET link (query params)
+GET {{baseUrl}}/api/v1/auth/verify-email?tokenId=your_token_id_here&token=your_verification_token_here
+
+### Verify with invalid token (should fail with 400)
+POST {{baseUrl}}/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "invalid_id",
+  "token": "invalid_token"
+}
+
+### Verify with missing fields (should fail with 400)
+POST {{baseUrl}}/api/v1/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "some_id"
+}

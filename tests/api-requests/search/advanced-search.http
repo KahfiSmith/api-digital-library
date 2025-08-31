@@ -1,0 +1,134 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+
+###
+### ADVANCED SEARCH API TESTS
+###
+
+### 1. Basic book search
+GET {{baseUrl}}/search/books?query=programming
+
+### 2. Advanced book search with all filters
+GET {{baseUrl}}/search/books?query=javascript&categoryId=tech_category_id&minRating=4&maxRating=5&language=en&availability=available&hasReviews=true&sortBy=rating&sortOrder=desc&page=1&limit=10
+
+### 3. Search by ISBN
+GET {{baseUrl}}/search/books?query=978-1234567890
+
+### 4. Search by author
+GET {{baseUrl}}/search/books?query=John%20Doe
+
+### 5. Search unavailable books
+GET {{baseUrl}}/search/books?query=python&availability=unavailable
+
+### 6. Search books without reviews
+GET {{baseUrl}}/search/books?query=machine%20learning&hasReviews=false
+
+### 7. Search by date range
+GET {{baseUrl}}/search/books?query=artificial%20intelligence&start=2020-01-01&end=2023-12-31
+
+### 8. Sort by different fields
+GET {{baseUrl}}/search/books?query=data%20science&sortBy=publishedDate&sortOrder=asc
+GET {{baseUrl}}/search/books?query=web%20development&sortBy=availability&sortOrder=desc
+GET {{baseUrl}}/search/books?query=algorithms&sortBy=title&sortOrder=asc
+
+###
+### CATEGORY SEARCH
+###
+
+### 9. Search categories
+GET {{baseUrl}}/search/categories?query=technology
+
+### 10. Search categories with pagination
+GET {{baseUrl}}/search/categories?query=science&page=1&limit=5
+
+### 11. Search categories by description
+GET {{baseUrl}}/search/categories?query=fiction
+
+###
+### USER SEARCH (Admin/Librarian only)
+###
+
+### 12. Search users (requires admin/librarian role)
+GET {{baseUrl}}/search/users?query=john
+Authorization: Bearer {{token}}
+
+### 13. Search users by role
+GET {{baseUrl}}/search/users?query=admin&role=ADMIN
+Authorization: Bearer {{token}}
+
+### 14. Search users by email
+GET {{baseUrl}}/search/users?query=example.com
+Authorization: Bearer {{token}}
+
+###
+### GLOBAL SEARCH
+###
+
+### 15. Global search - all types
+GET {{baseUrl}}/search/global?query=programming
+
+### 16. Global search - specific types
+GET {{baseUrl}}/search/global?query=javascript&types=books,categories
+
+### 17. Global search - with admin access
+GET {{baseUrl}}/search/global?query=john&types=books,categories,users
+Authorization: Bearer {{token}}
+
+### 18. Global search with pagination
+GET {{baseUrl}}/search/global?query=python&limit=3
+
+###
+### ADVANCED SEARCH SCENARIOS
+###
+
+### 19. Search for highly rated available books
+GET {{baseUrl}}/search/books?query=tutorial&minRating=4.5&availability=available&sortBy=rating&sortOrder=desc
+
+### 20. Search for recent books in specific category
+GET {{baseUrl}}/search/books?query=modern&categoryId=category_id_here&start=2022-01-01&sortBy=publishedDate&sortOrder=desc
+
+### 21. Search for books with many reviews
+GET {{baseUrl}}/search/books?query=popular&hasReviews=true&sortBy=rating&sortOrder=desc
+
+### 22. Search multilingual books
+GET {{baseUrl}}/search/books?query=international&language=es
+GET {{baseUrl}}/search/books?query=français&language=fr
+
+### 23. Search books by publisher
+GET {{baseUrl}}/search/books?query=O%27Reilly
+
+### 24. Search by tags
+GET {{baseUrl}}/search/books?query=beginner
+
+###
+### ERROR SCENARIOS
+###
+
+### 25. Search without query (should return empty results)
+GET {{baseUrl}}/search/books?query=
+
+### 26. Search with invalid rating range
+GET {{baseUrl}}/search/books?query=test&minRating=6&maxRating=10
+
+### 27. Search with invalid date format
+GET {{baseUrl}}/search/books?query=test&start=invalid-date
+
+### 28. Search users without authentication (should fail)
+GET {{baseUrl}}/search/users?query=test
+
+### 29. Search with invalid pagination
+GET {{baseUrl}}/search/books?query=test&page=0&limit=100
+
+###
+### PERFORMANCE TESTS
+###
+
+### 30. Large result set search
+GET {{baseUrl}}/search/books?query=the&limit=50
+
+### 31. Complex filter combination
+GET {{baseUrl}}/search/books?query=programming&categoryId=tech&minRating=3&maxRating=5&start=2020-01-01&end=2024-01-01&availability=available&hasReviews=true&sortBy=rating&sortOrder=desc&page=2&limit=20
+
+### 32. Global search with all types
+GET {{baseUrl}}/search/global?query=javascript&types=books,categories,users&limit=10
+Authorization: Bearer {{token}}

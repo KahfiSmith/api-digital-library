@@ -1,0 +1,8 @@
+### Get recommendations by category
+GET {{baseUrl}}/recommendations/category/{{categoryId}}
+
+### Get category recommendations with limit
+GET {{baseUrl}}/recommendations/category/{{categoryId}}?limit=5
+
+### Test with different category ID (replace with actual category ID from your database)
+GET {{baseUrl}}/recommendations/category/cm123category456id?limit=8

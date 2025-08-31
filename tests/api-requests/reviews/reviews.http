@@ -1,0 +1,67 @@
+@baseUrl = http://localhost:3001
+
+### Create a new review (requires login)
+POST {{baseUrl}}/api/v1/reviews
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here",
+  "rating": 5,
+  "reviewText": "This is an amazing book! Highly recommended for anyone interested in technology and programming.",
+  "isPublic": true
+}
+
+### Create review with minimal data
+POST {{baseUrl}}/api/v1/reviews
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here",
+  "rating": 4
+}
+
+### Get reviews for a book (public)
+GET {{baseUrl}}/api/v1/reviews/book/book_id_here?page=1&limit=10
+
+### Get all reviews by a user (requires auth - own reviews or admin)
+GET {{baseUrl}}/api/v1/reviews/user/user_id_here?page=1&limit=10
+
+### Update an existing review
+PUT {{baseUrl}}/api/v1/reviews/review_id_here
+Content-Type: application/json
+
+{
+  "rating": 3,
+  "reviewText": "Updated review text after reading more carefully.",
+  "isPublic": false
+}
+
+### Update review rating only
+PUT {{baseUrl}}/api/v1/reviews/review_id_here
+Content-Type: application/json
+
+{
+  "rating": 5
+}
+
+### Delete a review
+DELETE {{baseUrl}}/api/v1/reviews/review_id_here
+
+### Test invalid rating (should fail with 400)
+POST {{baseUrl}}/api/v1/reviews
+Content-Type: application/json
+
+{
+  "bookId": "book_id_here",
+  "rating": 6,
+  "reviewText": "Invalid rating"
+}
+
+### Test missing bookId (should fail with 400)
+POST {{baseUrl}}/api/v1/reviews
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "reviewText": "Missing book ID"
+}

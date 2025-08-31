@@ -1,0 +1,157 @@
+# Simple Auth Test (No Variables)
+# Use this if {{$dotenv}} variables don't work
+
+@baseUrl = http://localhost:3001/api/v1
+
+###
+### SIMPLE REGISTRATION & VERIFICATION FLOW
+### No variable capture - just copy/paste tokens manually
+###
+
+### 1) Register a new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser001",
+  "email": "testuser001@example.com",
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+# Look for this in the response:
+# {
+#   "data": {
+#     "verification": {
+#       "tokenId": "cm1abc123",  <-- COPY THIS
+#       "token": "xyz789..."     <-- COPY THIS
+#     },
+#     "user": {
+#       "email": "testuser001@example.com"  <-- COPY THIS
+#     }
+#   }
+# }
+
+### 2) Verify email - PASTE the tokenId and token from step 1
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_TOKEN_ID_HERE",
+  "token": "PASTE_TOKEN_HERE"
+}
+
+### 3) Request password reset - PASTE the email from step 1
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "testuser001@example.com"
+}
+
+# Look for this in the response:
+# {
+#   "data": {
+#     "reset": {
+#       "tokenId": "cm1def456",  <-- COPY THIS
+#       "token": "abc123..."     <-- COPY THIS
+#     }
+#   }
+# }
+
+### 4) Reset password - PASTE the reset tokenId and token from step 3
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_RESET_TOKEN_ID_HERE",
+  "token": "PASTE_RESET_TOKEN_HERE",
+  "newPassword": "NewPassword123!"
+}
+
+### 5) Login with new password
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "testuser001@example.com",
+  "password": "NewPassword123!"
+}
+
+###
+### ALTERNATIVE: Use different email for each test
+###
+
+### Test 2: Different user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser002",
+  "email": "testuser002@example.com",
+  "password": "Password123!",
+  "firstName": "Test",
+  "lastName": "User2"
+}
+
+### Verify Test 2 user (paste tokens from above)
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_TOKEN_ID_HERE",
+  "token": "PASTE_TOKEN_HERE"
+}
+
+###
+### TESTING EXISTING USERS
+###
+
+### Password reset for existing user
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "test123@example.com"
+}
+
+### Reset password for existing user (paste tokens from above)
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "tokenId": "PASTE_RESET_TOKEN_ID_HERE",
+  "token": "PASTE_RESET_TOKEN_HERE",
+  "newPassword": "NewPassword123!"
+}
+
+### Login with reset password
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "test123@example.com",
+  "password": "NewPassword123!"
+}
+
+###
+### ERROR TESTING
+###
+
+### Try to use invalid tokens
+POST {{baseUrl}}/auth/verify-email
+Content-Type: application/json
+
+{
+  "tokenId": "invalid_token_id",
+  "token": "invalid_token"
+}
+
+### Try to reset with wrong email
+POST {{baseUrl}}/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com"
+}

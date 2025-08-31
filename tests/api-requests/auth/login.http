@@ -1,30 +1,37 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
-### Login as admin (from seed)
-POST {{baseUrl}}/api/v1/auth/login
+### Login with email
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "identifier": "admin@digitallibrary.com",
-  "password": "password123"
+  "identifier": "test123@example.com",
+  "password": "Password123!"
 }
 
-> {% 
-// Save tokens from response for subsequent requests
-try {
-  if (response.status === 200) {
-    const body = JSON.parse(response.body);
-    const tokens = body?.data?.tokens || body?.tokens;
-    if (tokens && tokens.accessToken && tokens.refreshToken) {
-      client.global.set("accessToken", tokens.accessToken);
-      client.global.set("refreshToken", tokens.refreshToken);
-      client.log("Saved accessToken and refreshToken to globals");
-    }
-  }
-} catch (e) {}
-%}
+### Login with username
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
 
-### Current user (uses cookie or header)
-GET {{baseUrl}}/api/v1/auth/me
-Authorization: Bearer {{accessToken}}
+{
+  "identifier": "testuser123",
+  "password": "Password123!"
+}
+
+### Login with invalid credentials (should fail with 401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "wrong@example.com",
+  "password": "wrongpassword"
+}
+
+### Login with missing fields (should fail with 400)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "test123@example.com"
+}
 
