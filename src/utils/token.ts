@@ -2,7 +2,8 @@ import jwt, { SignOptions, Secret } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 
 const ACCESS_SECRET: Secret = (process.env.JWT_SECRET || '') as Secret;
-const REFRESH_SECRET: Secret = (process.env.JWT_REFRESH_SECRET || '') as Secret;
+// Fallback: if JWT_REFRESH_SECRET is not set (dev), reuse JWT_SECRET to keep flows working
+const REFRESH_SECRET: Secret = ((process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || '') as Secret);
 const ACCESS_EXPIRES_IN: SignOptions['expiresIn'] = (process.env.JWT_EXPIRES_IN || '15m') as SignOptions['expiresIn'];
 const REFRESH_EXPIRES_IN: SignOptions['expiresIn'] = (process.env.JWT_REFRESH_EXPIRES_IN || '30d') as SignOptions['expiresIn'];
 

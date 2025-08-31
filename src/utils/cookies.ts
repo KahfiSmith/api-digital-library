@@ -14,32 +14,57 @@ const isProd = process.env.NODE_ENV === 'production';
 const ACCESS_COOKIE_NAME = process.env.ACCESS_TOKEN_COOKIE_NAME || 'access_token';
 const REFRESH_COOKIE_NAME = process.env.REFRESH_TOKEN_COOKIE_NAME || 'refresh_token';
 
+function parseBoolean(val: string | undefined, fallback: boolean): boolean {
+  if (val === undefined) return fallback;
+  const v = String(val).toLowerCase();
+  if (v === 'true' || v === '1' || v === 'yes') return true;
+  if (v === 'false' || v === '0' || v === 'no') return false;
+  return fallback;
+}
+
+function parseSameSite(val: string | undefined): 'lax' | 'strict' | 'none' {
+  const v = String(val || '').toLowerCase();
+  if (v === 'none' || v === 'lax' || v === 'strict') return v as any;
+  return 'lax';
+}
+
 const accessMaxAge = parseDurationToMs(process.env.JWT_EXPIRES_IN || '15m', 15 * 60 * 1000);
 const refreshMaxAge = parseDurationToMs(process.env.JWT_REFRESH_EXPIRES_IN || '30d', 30 * 24 * 60 * 60 * 1000);
+
+// Cookie security settings (configurable for cross-site auth)
+const cookieSameSite = parseSameSite(process.env.AUTH_COOKIE_SAMESITE);
+let cookieSecure = parseBoolean(process.env.AUTH_COOKIE_SECURE, isProd);
+// SameSite=None must be Secure (per modern browsers)
+if (cookieSameSite === 'none') cookieSecure = true;
+const cookieDomain = process.env.AUTH_COOKIE_DOMAIN || undefined;
+const cookiePath = process.env.AUTH_COOKIE_PATH || '/';
 
 export function setAuthCookies(res: Response, accessToken: string, refreshToken?: string): void {
   res.cookie(ACCESS_COOKIE_NAME, accessToken, {
     httpOnly: true,
-    secure: isProd,
-    sameSite: 'lax',
+    secure: cookieSecure,
+    sameSite: cookieSameSite,
     maxAge: accessMaxAge,
-    path: '/',
+    path: cookiePath,
+    ...(cookieDomain ? { domain: cookieDomain } : {}),
   });
 
   if (refreshToken) {
     res.cookie(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
-      secure: isProd,
-      sameSite: 'lax',
+      secure: cookieSecure,
+      sameSite: cookieSameSite,
       maxAge: refreshMaxAge,
-      path: '/',
+      path: cookiePath,
+      ...(cookieDomain ? { domain: cookieDomain } : {}),
     });
   }
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie(ACCESS_COOKIE_NAME, { path: '/' });
-  res.clearCookie(REFRESH_COOKIE_NAME, { path: '/' });
+  const base = { path: cookiePath, ...(cookieDomain ? { domain: cookieDomain } : {}) } as const;
+  res.clearCookie(ACCESS_COOKIE_NAME, base);
+  res.clearCookie(REFRESH_COOKIE_NAME, base);
 }
 
 export function getCookie(req: Request, name: string): string | undefined {
