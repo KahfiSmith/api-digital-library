@@ -1,10 +1,9 @@
-import bcrypt from 'bcrypt';
 import { prisma } from '@/database/prisma';
-import { signAccessToken, signRefreshToken, verifyRefreshToken } from '@/utils/token';
 import { AppError } from '@/utils/appError';
-import { v4 as uuidv4 } from 'uuid';
+import { resetEmailTemplate, sendMail, verificationEmailTemplate } from '@/utils/email';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '@/utils/token';
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { sendMail, verificationEmailTemplate, resetEmailTemplate } from '@/utils/email';
 
 const BCRYPT_ROUNDS = Number(process.env.BCRYPT_ROUNDS || 12);
 
@@ -27,28 +26,55 @@ export async function register(input: {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-  const user = await prisma.user.create({
-    data: { username, email, passwordHash, firstName, lastName },
+  // Use transaction to ensure all operations succeed or fail together
+  const result = await prisma.$transaction(async (tx) => {
+    // Create user
+    const user = await tx.user.create({
+      data: { username, email, passwordHash, firstName, lastName },
+    });
+
+    const accessToken = signAccessToken({ userId: user.id, email: user.email, role: user.role });
+    const { token: refreshToken, jti, expiresAt } = signRefreshToken(user.id);
+
+    // Create refresh token
+    await tx.refreshToken.create({
+      data: {
+        id: jti,
+        userId: user.id,
+        tokenHash: await bcrypt.hash(refreshToken, BCRYPT_ROUNDS),
+        expiresAt,
+      },
+    });
+
+    // Create email verification token
+    const token = randomToken(24);
+    const tokenHash = await bcrypt.hash(token, BCRYPT_ROUNDS);
+    const emailExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    const emailRec = await tx.emailVerificationToken.create({ 
+      data: { userId: user.id, tokenHash, expiresAt: emailExpiresAt } 
+    });
+    
+    const link = `${process.env.APP_BASE_URL || 'http://localhost:' + (process.env.PORT || 3001)}/api/v1/auth/verify-email?tokenId=${emailRec.id}&token=${token}`;
+
+    return { 
+      user: sanitizeUser(user), 
+      tokens: { accessToken, refreshToken }, 
+      verification: { 
+        tokenId: emailRec.id, 
+        token: process.env.NODE_ENV !== 'production' ? token : undefined, 
+        link 
+      } 
+    };
   });
 
-  const accessToken = signAccessToken({ userId: user.id, email: user.email, role: user.role });
-  const { token: refreshToken, jti, expiresAt } = signRefreshToken(user.id);
+  // Fire-and-forget email sending (outside transaction)
+  sendMail({ 
+    to: email, 
+    subject: 'Verify your email', 
+    html: verificationEmailTemplate(result.verification.link) 
+  }).catch(() => {});
 
-  await prisma.refreshToken.create({
-    data: {
-      id: jti,
-      userId: user.id,
-      tokenHash: await bcrypt.hash(refreshToken, BCRYPT_ROUNDS),
-      expiresAt,
-    },
-  });
-
-  // Issue email verification token
-  const { tokenId: emailTokenId, token: emailToken, link: verificationLink } = await issueEmailVerification(user.id, user.email);
-  // Fire-and-forget email sending
-  sendMail({ to: user.email, subject: 'Verify your email', html: verificationEmailTemplate(verificationLink) }).catch(() => {});
-
-  return { user: sanitizeUser(user), tokens: { accessToken, refreshToken }, verification: { tokenId: emailTokenId, token: process.env.NODE_ENV !== 'production' ? emailToken : undefined, link: verificationLink } };
+  return result;
 }
 
 export async function login(input: { identifier: string; password: string }) {
@@ -131,21 +157,21 @@ export async function issueEmailVerification(userId: string, email: string) {
   const token = randomToken(24);
   const tokenHash = await bcrypt.hash(token, BCRYPT_ROUNDS);
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-  const rec = await (prisma as any).emailVerificationToken.create({ data: { userId, tokenHash, expiresAt } });
+  const rec = await prisma.emailVerificationToken.create({ data: { userId, tokenHash, expiresAt } });
   const link = `${process.env.APP_BASE_URL || 'http://localhost:' + (process.env.PORT || 3001)}/api/v1/auth/verify-email?tokenId=${rec.id}&token=${token}`;
   return { tokenId: rec.id, token, expiresAt, link };
 }
 
 export async function verifyEmail(input: { tokenId: string; token: string }) {
   const { tokenId, token } = input;
-  const rec = await (prisma as any).emailVerificationToken.findUnique({ where: { id: tokenId } });
+  const rec = await prisma.emailVerificationToken.findUnique({ where: { id: tokenId } });
   if (!rec || rec.isUsed) throw AppError.badRequest('Invalid or used token');
   if (rec.expiresAt < new Date()) throw AppError.badRequest('Token expired');
   const ok = await bcrypt.compare(token, rec.tokenHash);
   if (!ok) throw AppError.badRequest('Invalid token');
   await prisma.$transaction([
     prisma.user.update({ where: { id: rec.userId }, data: { emailVerified: true } }),
-    (prisma as any).emailVerificationToken.update({ where: { id: rec.id }, data: { isUsed: true } }),
+    prisma.emailVerificationToken.update({ where: { id: rec.id }, data: { isUsed: true } }),
   ]);
   return { success: true };
 }
@@ -159,7 +185,7 @@ export async function requestPasswordReset(input: { email: string }) {
   const token = randomToken(24);
   const tokenHash = await bcrypt.hash(token, BCRYPT_ROUNDS);
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1h
-  const rec = await (prisma as any).passwordResetToken.create({ data: { userId: user.id, tokenHash, expiresAt } });
+  const rec = await prisma.passwordResetToken.create({ data: { userId: user.id, tokenHash, expiresAt } });
   const link = `${process.env.APP_BASE_URL || 'http://localhost:' + (process.env.PORT || 3001)}/api/v1/auth/reset-password?tokenId=${rec.id}&token=${token}`;
   // Send email
   sendMail({ to: user.email, subject: 'Reset your password', html: resetEmailTemplate(link) }).catch(() => {});
@@ -168,7 +194,7 @@ export async function requestPasswordReset(input: { email: string }) {
 
 export async function resetPassword(input: { tokenId: string; token: string; newPassword: string }) {
   const { tokenId, token, newPassword } = input;
-  const rec = await (prisma as any).passwordResetToken.findUnique({ where: { id: tokenId } });
+  const rec = await prisma.passwordResetToken.findUnique({ where: { id: tokenId } });
   if (!rec || rec.isUsed) throw AppError.badRequest('Invalid or used token');
   if (rec.expiresAt < new Date()) throw AppError.badRequest('Token expired');
   const ok = await bcrypt.compare(token, rec.tokenHash);
@@ -176,7 +202,7 @@ export async function resetPassword(input: { tokenId: string; token: string; new
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
   await prisma.$transaction([
     prisma.user.update({ where: { id: rec.userId }, data: { passwordHash } }),
-    (prisma as any).passwordResetToken.update({ where: { id: rec.id }, data: { isUsed: true } }),
+    prisma.passwordResetToken.update({ where: { id: rec.id }, data: { isUsed: true } }),
   ]);
   return { success: true };
 }

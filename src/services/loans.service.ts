@@ -1,6 +1,7 @@
 import { prisma } from '@/database/prisma';
 import { AppError } from '@/utils/appError';
-import { LoanStatus } from '@prisma/client';
+import { LoanStatus } from '@/types/enums';
+import * as NotificationsService from './notifications.service';
 
 export interface ListQuery {
   page?: number;
@@ -89,5 +90,85 @@ export async function returnLoan(id: string) {
   ]);
 
   return updated;
+}
+
+// Notification integration functions
+export async function checkDueLoans() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const dueLoans = await prisma.bookLoan.findMany({
+    where: {
+      status: LoanStatus.ACTIVE,
+      dueDate: {
+        gte: new Date(),
+        lte: tomorrow,
+      },
+    },
+    include: {
+      user: true,
+      book: true,
+    },
+  });
+
+  // Send due reminders
+  for (const loan of dueLoans) {
+    try {
+      await NotificationsService.notifyBookDue(
+        loan.userId,
+        loan.book.title,
+        loan.dueDate,
+        loan.id
+      );
+    } catch (error) {
+      console.error(`Failed to send due reminder for loan ${loan.id}:`, error);
+    }
+  }
+
+  return { notificationsSent: dueLoans.length };
+}
+
+export async function checkOverdueLoans() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const overdueLoans = await prisma.bookLoan.findMany({
+    where: {
+      status: LoanStatus.ACTIVE,
+      dueDate: {
+        lt: today,
+      },
+    },
+    include: {
+      user: true,
+      book: true,
+    },
+  });
+
+  // Update overdue status and send notifications
+  for (const loan of overdueLoans) {
+    try {
+      // Update loan status to overdue
+      await prisma.bookLoan.update({
+        where: { id: loan.id },
+        data: { status: LoanStatus.OVERDUE },
+      });
+
+      // Calculate overdue days
+      const daysOverdue = Math.ceil((today.getTime() - loan.dueDate.getTime()) / (1000 * 3600 * 24));
+
+      // Send overdue notification
+      await NotificationsService.notifyBookOverdue(
+        loan.userId,
+        loan.book.title,
+        daysOverdue,
+        loan.id
+      );
+    } catch (error) {
+      console.error(`Failed to process overdue loan ${loan.id}:`, error);
+    }
+  }
+
+  return { loansProcessed: overdueLoans.length };
 }
 

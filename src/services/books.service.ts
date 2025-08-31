@@ -1,5 +1,6 @@
 import { prisma } from '@/database/prisma';
 import { AppError } from '@/utils/appError';
+import * as NotificationsService from './notifications.service';
 
 export interface ListQuery {
   page?: number;
@@ -71,6 +72,17 @@ export async function create(input: {
   tags?: string[];
 }) {
   const book = await prisma.book.create({ data: ({ ...input, tags: input.tags || [] } as any) });
+  
+  // Send new book notifications to users with wishlist in this category
+  try {
+    const category = await prisma.category.findUnique({ where: { id: input.categoryId } });
+    if (category) {
+      await NotificationsService.notifyNewBook(book.title, category.name);
+    }
+  } catch (error) {
+    console.error('Failed to send new book notifications:', error);
+  }
+  
   return book;
 }
 

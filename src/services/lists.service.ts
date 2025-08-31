@@ -1,6 +1,6 @@
 import { prisma } from '@/database/prisma';
 import { AppError } from '@/utils/appError';
-import { ListType } from '@prisma/client';
+import { ListType } from '@/types/enums';
 
 export interface ListQuery {
   page?: number;
