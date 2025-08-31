@@ -1,6 +1,7 @@
 import { body, param, query } from 'express-validator';
+import { ListType } from '@/types/enums';
 
-const listTypes = ['FAVORITES', 'WISHLIST', 'READING', 'COMPLETED'];
+const listTypes = Object.values(ListType);
 
 export const listTypeParam = [param('listType').isIn(listTypes)];
 export const bookIdParam = [param('bookId').isString().notEmpty()];
