@@ -12,6 +12,14 @@ router.get('/', (req, res) => {
       books: '/api/v1/books',
       categories: '/api/v1/categories',
       loans: '/api/v1/loans',
+      reviews: '/api/v1/reviews',
+      lists: '/api/v1/lists',
+      notifications: '/api/v1/notifications',
+      search: '/api/v1/search',
+      reservations: '/api/v1/reservations',
+      upload: '/api/v1/upload',
+      email: '/api/v1/email',
+      recommendations: '/api/v1/recommendations',
       admin: '/api/v1/admin'
     }
   });
