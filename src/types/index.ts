@@ -24,6 +24,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 export interface JWTPayload {
+  id: string;
   userId: string;
   email: string;
   role: string;
