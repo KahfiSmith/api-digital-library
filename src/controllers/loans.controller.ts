@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as Loans from '@/services/loans.service';
 import { ResponseUtil } from '@/utils/response';
 import { AppError } from '@/utils/appError';
-import { LoanStatus } from '@prisma/client';
+import { LoanStatus } from '@/types/enums';
 
 export async function list(req: Request, res: Response) {
   const { page, limit, status, userId, bookId } = req.query as any;

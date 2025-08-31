@@ -20,7 +20,12 @@ export async function login(req: Request, res: Response) {
 export async function refresh(req: Request, res: Response) {
   const bodyToken = req.body?.refreshToken as string | undefined;
   const cookieToken = getCookie(req, COOKIE_NAMES.refresh);
-  const token = bodyToken || cookieToken || '';
+  const token = bodyToken || cookieToken;
+  
+  if (!token) {
+    return ResponseUtil.error(res, 'Refresh token is required', 401);
+  }
+  
   const result = await AuthService.refresh({ refreshToken: token });
   setAuthCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
   return ResponseUtil.success(res, 'Token refreshed', result);
@@ -29,7 +34,12 @@ export async function refresh(req: Request, res: Response) {
 export async function logout(req: Request, res: Response) {
   const bodyToken = req.body?.refreshToken as string | undefined;
   const cookieToken = getCookie(req, COOKIE_NAMES.refresh);
-  const token = bodyToken || cookieToken || '';
+  const token = bodyToken || cookieToken;
+  
+  if (!token) {
+    return ResponseUtil.error(res, 'Refresh token is required', 401);
+  }
+  
   await AuthService.logout({ refreshToken: token });
   clearAuthCookies(res);
   return ResponseUtil.success(res, 'Logged out');
@@ -41,6 +51,14 @@ export async function me(req: Request, res: Response) {
 
 export async function verifyEmail(req: Request, res: Response) {
   const { tokenId, token } = req.body as { tokenId: string; token: string };
+  await AuthService.verifyEmail({ tokenId, token });
+  return ResponseUtil.success(res, 'Email verified');
+}
+
+// Support verifying via link with query parameters (GET /verify-email?tokenId=..&token=..)
+export async function verifyEmailLink(req: Request, res: Response) {
+  const tokenId = String((req.query as any).tokenId || '');
+  const token = String((req.query as any).token || '');
   await AuthService.verifyEmail({ tokenId, token });
   return ResponseUtil.success(res, 'Email verified');
 }

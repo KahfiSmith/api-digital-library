@@ -2,8 +2,9 @@ import { Request, Response } from 'express';
 import * as Admin from '@/services/admin.service';
 import { ResponseUtil } from '@/utils/response';
 import { toCsv, sendCsv } from '@/utils/csv';
+import * as bcrypt from 'bcrypt';
 
-export async function stats(req: Request, res: Response) {
+export async function getStats(req: Request, res: Response) {
   const data = await Admin.getStats();
   return ResponseUtil.success(res, 'System stats', data);
 }
@@ -38,9 +39,11 @@ export async function setUserPassword(req: Request, res: Response) {
   const { newPassword } = req.body as { newPassword: string };
   // Delegate to users service for hashing
   const rounds = Number(process.env.BCRYPT_ROUNDS || 12);
-  const bcrypt = await import('bcrypt');
   const passwordHash = await bcrypt.hash(newPassword, rounds);
-  const user = await (await import('@/database/prisma')).prisma.user.update({ where: { id }, data: { passwordHash } });
+  const user = await (await import('@/database/prisma')).prisma.user.update({ 
+    where: { id }, 
+    data: { passwordHash } 
+  });
   return ResponseUtil.success(res, 'User password updated', { id: user.id });
 }
 
@@ -52,43 +55,64 @@ export async function updateUserRole(req: Request, res: Response) {
   return ResponseUtil.success(res, 'User role updated', user);
 }
 
+// CSV Export endpoints
 export async function exportUsersCsv(req: Request, res: Response) {
-  const { items } = await Admin.listUsers({ page: 1, limit: 1000 });
-  const csv = toCsv(items as any[]);
-  sendCsv(res, 'users.csv', csv);
+  const users = await Admin.listUsers({ limit: 1000 });
+  const csv = toCsv(users.items);
+  return sendCsv(res, 'users.csv', csv);
 }
 
-export async function exportBooksCsv(_req: Request, res: Response) {
-  const books = await (await import('@/database/prisma')).prisma.book.findMany({ orderBy: { createdAt: 'desc' } });
-  const csv = toCsv(books as any[]);
-  sendCsv(res, 'books.csv', csv);
+export async function exportBooksCsv(req: Request, res: Response) {
+  const books = await (await import('@/services/books.service')).list({ limit: 1000 });
+  const csv = toCsv(books.items);
+  return sendCsv(res, 'books.csv', csv);
 }
 
-export async function exportLoansCsv(_req: Request, res: Response) {
-  const loans = await (await import('@/database/prisma')).prisma.bookLoan.findMany({ orderBy: { createdAt: 'desc' } });
-  const csv = toCsv(loans as any[]);
-  sendCsv(res, 'loans.csv', csv);
+export async function exportLoansCsv(req: Request, res: Response) {
+  const loans = await (await import('@/services/loans.service')).list({ limit: 1000 });
+  const csv = toCsv(loans.items);
+  return sendCsv(res, 'loans.csv', csv);
 }
 
-export async function analyticsOverview(_req: Request, res: Response) {
+// Analytics overview endpoint
+export async function analyticsOverview(req: Request, res: Response) {
   const data = await Admin.analyticsOverview();
   return ResponseUtil.success(res, 'Analytics overview', data);
 }
 
-export async function analyticsTimeseries(req: Request, res: Response) {
-  const { days } = req.query as any;
-  const data = await Admin.analyticsTimeseries(days ? Number(days) : 30);
-  return ResponseUtil.success(res, 'Analytics timeseries', data);
+// New analytics endpoints
+export async function getLoanStatistics(req: Request, res: Response) {
+  const { startDate, endDate, categoryId } = req.query;
+  const data = await Admin.getLoanStatistics({
+    startDate: startDate ? new Date(startDate as string) : undefined,
+    endDate: endDate ? new Date(endDate as string) : undefined,
+    categoryId: categoryId as string,
+  });
+  return ResponseUtil.success(res, 'Loan statistics retrieved successfully', data);
 }
 
-export async function analyticsTopBooks(req: Request, res: Response) {
-  const { limit } = req.query as any;
-  const data = await Admin.topBooks(limit ? Number(limit) : 5);
-  return ResponseUtil.success(res, 'Top books', data);
+export async function getUserEngagement(req: Request, res: Response) {
+  const { startDate, endDate, minActivityCount } = req.query;
+  const data = await Admin.getUserEngagement({
+    startDate: startDate ? new Date(startDate as string) : undefined,
+    endDate: endDate ? new Date(endDate as string) : undefined,
+    minActivityCount: minActivityCount ? Number(minActivityCount) : undefined,
+  });
+  return ResponseUtil.success(res, 'User engagement data retrieved successfully', data);
 }
 
-export async function analyticsTopCategories(req: Request, res: Response) {
-  const { limit } = req.query as any;
-  const data = await Admin.topCategories(limit ? Number(limit) : 5);
-  return ResponseUtil.success(res, 'Top categories', data);
+export async function getBookPopularityMetrics(req: Request, res: Response) {
+  const { startDate, endDate, limit, includeDetails } = req.query;
+  const data = await Admin.getBookPopularityMetrics({
+    startDate: startDate ? new Date(startDate as string) : undefined,
+    endDate: endDate ? new Date(endDate as string) : undefined,
+    limit: limit ? Number(limit) : undefined,
+    includeDetails: includeDetails === 'true',
+  });
+  return ResponseUtil.success(res, 'Book popularity metrics retrieved successfully', data);
+}
+
+export async function getDashboardData(req: Request, res: Response) {
+  const data = await Admin.getDashboardData();
+  return ResponseUtil.success(res, 'Dashboard data retrieved successfully', data);
 }

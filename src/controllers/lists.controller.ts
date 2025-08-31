@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import * as Lists from '@/services/lists.service';
 import { ResponseUtil } from '@/utils/response';
-import { ListType } from '@prisma/client';
+import { ListType } from '@/types/enums';
 
 export async function listByType(req: Request, res: Response) {
   const uid = req.user?.userId as string;
