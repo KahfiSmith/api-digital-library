@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { logger } from '@/utils/logger';
 import { Prisma } from '@prisma/client';
 import { AppError } from '@/utils/appError';
+import { ResponseUtil } from '@/utils/response';
 
 interface CustomError extends Error {
   statusCode?: number;
@@ -67,24 +68,9 @@ export const errorHandler = (
     customError.status = 'error';
   }
 
-  if (process.env.NODE_ENV === 'development') {
-    res.status(err.statusCode || 500).json({
-      status: err.status,
-      error: err.message,
-      message: err.message,
-      stack: err.stack
-    });
-  } else {
-    if (err.isOperational) {
-      res.status(err.statusCode || 500).json({
-        status: err.status,
-        message: err.message
-      });
-    } else {
-      res.status(500).json({
-        status: 'error',
-        message: 'Something went wrong!'
-      });
-    }
-  }
+  // Standardized error response
+  const includeStack = process.env.NODE_ENV === 'development' ? err.stack : undefined;
+  const message = err.isOperational ? err.message : 'Something went wrong!';
+  const statusCode = err.isOperational ? (err.statusCode || 500) : 500;
+  ResponseUtil.error(res, message, statusCode, includeStack);
 };

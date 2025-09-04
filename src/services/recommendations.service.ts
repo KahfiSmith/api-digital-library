@@ -1,4 +1,6 @@
 import { prisma } from '@/database/prisma';
+import { cache, getTtlMs } from '@/utils/cache';
+import { logger } from '@/utils/logger';
 import { ListType } from '@prisma/client';
 
 export interface RecommendationQuery {
@@ -6,6 +8,16 @@ export interface RecommendationQuery {
   limit?: number;
   excludeRead?: boolean;
   minRating?: number;
+}
+
+export type SortBy = 'score' | 'rating' | 'title';
+export type SortOrder = 'asc' | 'desc';
+
+export interface PaginationSort {
+  limit?: number;
+  page?: number;
+  sortBy?: SortBy;
+  sortOrder?: SortOrder;
 }
 
 export interface BookRecommendation {
@@ -32,12 +44,12 @@ export interface RecommendationStats {
  * Get personalized book recommendations for a user
  */
 export async function getPersonalizedRecommendations(
-  query: RecommendationQuery
+  query: RecommendationQuery & PaginationSort
 ): Promise<{
   recommendations: BookRecommendation[];
   stats: RecommendationStats;
 }> {
-  const { userId, limit = 10, excludeRead = true, minRating = 3.0 } = query;
+  const { userId, limit = 10, page = 1, sortBy = 'score', sortOrder = 'desc', excludeRead = true, minRating = 3.0 } = query;
 
   // Get user's reading history and preferences
   const [userLoans, userReviews, userLists, userProfile] = await Promise.all([
@@ -100,10 +112,10 @@ export async function getPersonalizedRecommendations(
     userReviews
   );
 
-  // Sort by score and limit results
-  const recommendations = scoredRecommendations
-    .sort((a, b) => b.recommendationScore - a.recommendationScore)
-    .slice(0, limit);
+  // Sort and paginate
+  const sorted = sortRecommendations(scoredRecommendations, sortBy, sortOrder);
+  const offset = Math.max(0, (page - 1) * limit);
+  const recommendations = sorted.slice(offset, offset + limit);
 
   // Calculate stats
   const stats = calculateRecommendationStats(recommendations);
@@ -119,8 +131,12 @@ export async function getPersonalizedRecommendations(
  */
 export async function getSimilarBooks(
   bookId: string,
-  limit = 5
+  options: PaginationSort = { limit: 5 }
 ): Promise<BookRecommendation[]> {
+  const limit = options.limit ?? 5;
+  const page = options.page ?? 1;
+  const sortBy = options.sortBy ?? 'score';
+  const sortOrder = options.sortOrder ?? 'desc';
   const targetBook = await prisma.book.findUnique({
     where: { id: bookId },
     include: {
@@ -161,7 +177,7 @@ export async function getSimilarBooks(
   });
 
   // Score similarity based on various factors
-  return similarBooks
+  const recs = similarBooks
     .map((book) => ({
       id: book.id,
       title: book.title,
@@ -174,66 +190,77 @@ export async function getSimilarBooks(
       },
       recommendationScore: calculateSimilarityScore(targetBook, book),
       reasons: ['Similar category', 'Similar rating'],
-    }))
-    .sort((a, b) => b.recommendationScore - a.recommendationScore)
-    .slice(0, limit);
+    }));
+
+  const sorted = sortRecommendations(recs, sortBy, sortOrder);
+  const offset = Math.max(0, (page - 1) * limit);
+  return sorted.slice(offset, offset + limit);
 }
 
 /**
  * Get trending books based on recent activity
  */
-export async function getTrendingBooks(limit = 10): Promise<BookRecommendation[]> {
+export async function getTrendingBooks(options: PaginationSort = { limit: 10 }): Promise<BookRecommendation[]> {
+  const limit = options.limit ?? 10;
+  const page = options.page ?? 1;
+  const sortBy = options.sortBy ?? 'score';
+  const sortOrder = options.sortOrder ?? 'desc';
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  // Get books with most activity in the last 30 days
-  const trendingBooks = await prisma.book.findMany({
-    where: {
-      isActive: true,
-      OR: [
-        {
-          bookLoans: {
-            some: {
-              loanDate: { gte: thirtyDaysAgo },
+  // Get base recommendations (cached)
+  const baseKey = 'recs:trending:base:v1';
+  let recs: BookRecommendation[] | undefined = cache.get<BookRecommendation[]>(baseKey);
+
+  if (!recs) {
+    if (process.env.RECS_CACHE_LOG === '1') logger.info('cache_miss', { key: baseKey });
+    const trendingBooks = await prisma.book.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          {
+            bookLoans: {
+              some: {
+                loanDate: { gte: thirtyDaysAgo },
+              },
             },
           },
-        },
-        {
-          bookReviews: {
-            some: {
-              createdAt: { gte: thirtyDaysAgo },
+          {
+            bookReviews: {
+              some: {
+                createdAt: { gte: thirtyDaysAgo },
+              },
             },
           },
-        },
-        {
-          bookLists: {
-            some: {
-              addedAt: { gte: thirtyDaysAgo },
+          {
+            bookLists: {
+              some: {
+                addedAt: { gte: thirtyDaysAgo },
+              },
             },
           },
-        },
-      ],
-    },
-    include: {
-      category: true,
-      _count: {
-        select: {
-          bookLoans: {
-            where: { loanDate: { gte: thirtyDaysAgo } },
-          },
-          bookReviews: {
-            where: { createdAt: { gte: thirtyDaysAgo } },
-          },
-          bookLists: {
-            where: { addedAt: { gte: thirtyDaysAgo } },
+        ],
+      },
+      include: {
+        category: true,
+        _count: {
+          select: {
+            bookLoans: {
+              where: { loanDate: { gte: thirtyDaysAgo } },
+            },
+            bookReviews: {
+              where: { createdAt: { gte: thirtyDaysAgo } },
+            },
+            bookLists: {
+              where: { addedAt: { gte: thirtyDaysAgo } },
+            },
           },
         },
       },
-    },
-    take: limit * 2,
-  });
+      take: 200,
+    });
 
-  return trendingBooks
+    recs = trendingBooks
     .map((book) => ({
       id: book.id,
       title: book.title,
@@ -249,9 +276,17 @@ export async function getTrendingBooks(limit = 10): Promise<BookRecommendation[]
         book._count.bookReviews * 2 + 
         book._count.bookLists * 1,
       reasons: ['Trending', 'Popular recently'],
-    }))
-    .sort((a, b) => b.recommendationScore - a.recommendationScore)
-    .slice(0, limit);
+    }));
+
+    const ttl = getTtlMs('RECS_CACHE_TTL_MS', 10 * 60 * 1000); // default 10m
+    cache.set(baseKey, recs, ttl);
+  } else {
+    if (process.env.RECS_CACHE_LOG === '1') logger.info('cache_hit', { key: baseKey });
+  }
+
+  const sorted = sortRecommendations(recs, sortBy, sortOrder);
+  const offset = Math.max(0, (page - 1) * limit);
+  return sorted.slice(offset, offset + limit);
 }
 
 /**
@@ -259,9 +294,19 @@ export async function getTrendingBooks(limit = 10): Promise<BookRecommendation[]
  */
 export async function getRecommendationsByCategory(
   categoryId: string,
-  limit = 10
+  options: PaginationSort = { limit: 10 }
 ): Promise<BookRecommendation[]> {
-  const books = await prisma.book.findMany({
+  const limit = options.limit ?? 10;
+  const page = options.page ?? 1;
+  const sortBy = options.sortBy ?? 'score';
+  const sortOrder = options.sortOrder ?? 'desc';
+
+  const baseKey = `recs:category:${categoryId}:base:v1`;
+  let recs: BookRecommendation[] | undefined = cache.get<BookRecommendation[]>(baseKey);
+
+  if (!recs) {
+    if (process.env.RECS_CACHE_LOG === '1') logger.info('cache_miss', { key: baseKey });
+    const books = await prisma.book.findMany({
     where: {
       categoryId,
       isActive: true,
@@ -274,10 +319,10 @@ export async function getRecommendationsByCategory(
       { rating: 'desc' },
       { createdAt: 'desc' },
     ],
-    take: limit,
-  });
+      take: 300,
+    });
 
-  return books.map((book) => ({
+    recs = books.map((book) => ({
     id: book.id,
     title: book.title,
     authors: book.authors,
@@ -289,7 +334,17 @@ export async function getRecommendationsByCategory(
     },
     recommendationScore: book.rating,
     reasons: ['High rated in category'],
-  }));
+    }));
+
+    const ttl = getTtlMs('RECS_CACHE_TTL_MS', 10 * 60 * 1000); // default 10m
+    cache.set(baseKey, recs, ttl);
+  } else {
+    if (process.env.RECS_CACHE_LOG === '1') logger.info('cache_hit', { key: baseKey });
+  }
+
+  const sorted = sortRecommendations(recs, sortBy, sortOrder);
+  const offset = Math.max(0, (page - 1) * limit);
+  return sorted.slice(offset, offset + limit);
 }
 
 // Helper functions
@@ -499,4 +554,23 @@ function calculateRecommendationStats(recommendations: BookRecommendation[]): Re
     byCategory,
     byReason,
   };
+}
+
+function sortRecommendations(
+  recs: BookRecommendation[],
+  sortBy: SortBy,
+  sortOrder: SortOrder
+): BookRecommendation[] {
+  const factor = sortOrder === 'asc' ? 1 : -1;
+  const sorted = [...recs].sort((a, b) => {
+    if (sortBy === 'rating') {
+      return factor * (a.rating - b.rating);
+    }
+    if (sortBy === 'title') {
+      return factor * a.title.localeCompare(b.title);
+    }
+    // default: score
+    return factor * (a.recommendationScore - b.recommendationScore);
+  });
+  return sorted;
 }

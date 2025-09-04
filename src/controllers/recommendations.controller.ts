@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import * as RecommendationService from '@/services/recommendations.service';
 import { ResponseUtil } from '@/utils/response';
+import crypto from 'crypto';
+import { getTtlMs } from '@/utils/cache';
 import { AppError } from '@/utils/appError';
 
 /**
@@ -13,7 +15,7 @@ export async function getPersonalizedRecommendations(req: Request, res: Response
     throw new AppError('Authentication required', 401);
   }
 
-  const { limit, excludeRead, minRating } = req.query;
+  const { limit, excludeRead, minRating, page, sortBy, sortOrder } = req.query as any;
   
   const query = {
     userId,
@@ -22,7 +24,12 @@ export async function getPersonalizedRecommendations(req: Request, res: Response
     minRating: minRating ? parseFloat(minRating as string) : undefined,
   };
 
-  const result = await RecommendationService.getPersonalizedRecommendations(query);
+  const result = await RecommendationService.getPersonalizedRecommendations({
+    ...query,
+    page: page ? parseInt(page as string) : 1,
+    sortBy: (sortBy as any) || 'score',
+    sortOrder: (sortOrder as any) || 'desc',
+  });
   
   return ResponseUtil.success(res, 'Personalized recommendations retrieved', {
     recommendations: result.recommendations,
@@ -30,6 +37,9 @@ export async function getPersonalizedRecommendations(req: Request, res: Response
     query: {
       userId,
       limit: query.limit || 10,
+      page: page ? parseInt(page as string) : 1,
+      sortBy: (sortBy as any) || 'score',
+      sortOrder: (sortOrder as any) || 'desc',
       excludeRead: query.excludeRead !== false,
       minRating: query.minRating || 3.0,
     },
@@ -41,7 +51,7 @@ export async function getPersonalizedRecommendations(req: Request, res: Response
  */
 export async function getSimilarBooks(req: Request, res: Response) {
   const { bookId } = req.params;
-  const { limit } = req.query;
+  const { limit, page, sortBy, sortOrder } = req.query as any;
   
   if (!bookId) {
     throw new AppError('Book ID is required', 400);
@@ -49,7 +59,12 @@ export async function getSimilarBooks(req: Request, res: Response) {
 
   const recommendations = await RecommendationService.getSimilarBooks(
     bookId,
-    limit ? parseInt(limit as string) : undefined
+    {
+      limit: limit ? parseInt(limit as string) : undefined,
+      page: page ? parseInt(page as string) : 1,
+      sortBy: (sortBy as any) || 'score',
+      sortOrder: (sortOrder as any) || 'desc',
+    }
   );
   
   return ResponseUtil.success(res, 'Similar books retrieved', {
@@ -63,11 +78,35 @@ export async function getSimilarBooks(req: Request, res: Response) {
  * Get trending books based on recent activity
  */
 export async function getTrendingBooks(req: Request, res: Response) {
-  const { limit } = req.query;
+  const { limit, page, sortBy, sortOrder } = req.query as any;
   
-  const recommendations = await RecommendationService.getTrendingBooks(
-    limit ? parseInt(limit as string) : undefined
-  );
+  const recommendations = await RecommendationService.getTrendingBooks({
+    limit: limit ? parseInt(limit as string) : undefined,
+    page: page ? parseInt(page as string) : 1,
+    sortBy: (sortBy as any) || 'score',
+    sortOrder: (sortOrder as any) || 'desc',
+  });
+  // Cache headers for public trending data
+  const ttlSec = Math.floor(getTtlMs('RECS_CACHE_TTL_MS', 10 * 60 * 1000) / 1000);
+  if (ttlSec > 0) {
+    res.set('Cache-Control', `public, max-age=${ttlSec}`);
+  }
+
+  // ETag handling (conditional GET)
+  const etagPayload = {
+    recommendations,
+    limit: limit ? parseInt(limit as string) : undefined,
+    page: page ? parseInt(page as string) : 1,
+    sortBy: (sortBy as any) || 'score',
+    sortOrder: (sortOrder as any) || 'desc',
+  };
+  const etag = 'W/"' + crypto.createHash('sha1').update(JSON.stringify(etagPayload)).digest('hex') + '"';
+  const incoming = req.headers['if-none-match'];
+  if (incoming && incoming === etag) {
+    res.status(304).end();
+    return;
+  }
+  res.set('ETag', etag);
   
   return ResponseUtil.success(res, 'Trending books retrieved', {
     recommendations,
@@ -81,7 +120,7 @@ export async function getTrendingBooks(req: Request, res: Response) {
  */
 export async function getRecommendationsByCategory(req: Request, res: Response) {
   const { categoryId } = req.params;
-  const { limit } = req.query;
+  const { limit, page, sortBy, sortOrder } = req.query as any;
   
   if (!categoryId) {
     throw new AppError('Category ID is required', 400);
@@ -89,8 +128,35 @@ export async function getRecommendationsByCategory(req: Request, res: Response) 
 
   const recommendations = await RecommendationService.getRecommendationsByCategory(
     categoryId,
-    limit ? parseInt(limit as string) : undefined
+    {
+      limit: limit ? parseInt(limit as string) : undefined,
+      page: page ? parseInt(page as string) : 1,
+      sortBy: (sortBy as any) || 'score',
+      sortOrder: (sortOrder as any) || 'desc',
+    }
   );
+  // Cache headers for public category recommendations
+  const ttlSec = Math.floor(getTtlMs('RECS_CACHE_TTL_MS', 10 * 60 * 1000) / 1000);
+  if (ttlSec > 0) {
+    res.set('Cache-Control', `public, max-age=${ttlSec}`);
+  }
+
+  // ETag handling (conditional GET)
+  const etagPayload = {
+    categoryId,
+    recommendations,
+    limit: limit ? parseInt(limit as string) : undefined,
+    page: page ? parseInt(page as string) : 1,
+    sortBy: (sortBy as any) || 'score',
+    sortOrder: (sortOrder as any) || 'desc',
+  };
+  const etag = 'W/"' + crypto.createHash('sha1').update(JSON.stringify(etagPayload)).digest('hex') + '"';
+  const incoming = req.headers['if-none-match'];
+  if (incoming && incoming === etag) {
+    res.status(304).end();
+    return;
+  }
+  res.set('ETag', etag);
   
   return ResponseUtil.success(res, 'Category recommendations retrieved', {
     categoryId,
