@@ -18,6 +18,20 @@ export const personalizedRecommendationsRules = [
     .optional()
     .isFloat({ min: 0, max: 5 })
     .withMessage('minRating must be a number between 0 and 5'),
+  
+  // Pagination & sorting
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('sortBy')
+    .optional()
+    .isIn(['score', 'rating', 'title'])
+    .withMessage('sortBy must be one of: score, rating, title'),
+  query('sortOrder')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('sortOrder must be either asc or desc'),
 ];
 
 /**
@@ -34,6 +48,19 @@ export const similarBooksRules = [
     .optional()
     .isInt({ min: 1, max: 20 })
     .withMessage('Limit must be a number between 1 and 20'),
+  // Pagination & sorting
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('sortBy')
+    .optional()
+    .isIn(['score', 'rating', 'title'])
+    .withMessage('sortBy must be one of: score, rating, title'),
+  query('sortOrder')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('sortOrder must be either asc or desc'),
 ];
 
 /**
@@ -44,6 +71,19 @@ export const trendingBooksRules = [
     .optional()
     .isInt({ min: 1, max: 50 })
     .withMessage('Limit must be a number between 1 and 50'),
+  // Pagination & sorting
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('sortBy')
+    .optional()
+    .isIn(['score', 'rating', 'title'])
+    .withMessage('sortBy must be one of: score, rating, title'),
+  query('sortOrder')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('sortOrder must be either asc or desc'),
 ];
 
 /**
@@ -60,6 +100,19 @@ export const categoryRecommendationsRules = [
     .optional()
     .isInt({ min: 1, max: 30 })
     .withMessage('Limit must be a number between 1 and 30'),
+  // Pagination & sorting
+  query('page')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('Page must be a positive integer'),
+  query('sortBy')
+    .optional()
+    .isIn(['score', 'rating', 'title'])
+    .withMessage('sortBy must be one of: score, rating, title'),
+  query('sortOrder')
+    .optional()
+    .isIn(['asc', 'desc'])
+    .withMessage('sortOrder must be either asc or desc'),
 ];
 
 /**
@@ -70,12 +123,10 @@ export const baseRecommendationRules = [
     .optional()
     .isInt({ min: 1 })
     .withMessage('Page must be a positive integer'),
-  
   query('sortBy')
     .optional()
-    .isIn(['score', 'rating', 'title', 'createdAt'])
-    .withMessage('sortBy must be one of: score, rating, title, createdAt'),
-  
+    .isIn(['score', 'rating', 'title'])
+    .withMessage('sortBy must be one of: score, rating, title'),
   query('sortOrder')
     .optional()
     .isIn(['asc', 'desc'])

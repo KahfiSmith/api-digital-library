@@ -10,12 +10,14 @@ export class ResponseUtil {
     } as ApiResponse<T>);
   }
 
-  static error(res: Response, message: string, statusCode: number = 500, error?: string): Response {
-    return res.status(statusCode).json({
+  static error(res: Response, message: string, statusCode: number = 500, error?: string, errors?: unknown): Response {
+    const payload: Record<string, unknown> = {
       success: false,
       message,
-      error
-    } as ApiResponse);
+    };
+    if (error !== undefined) payload.error = error;
+    if (errors !== undefined) payload.errors = errors;
+    return res.status(statusCode).json(payload as unknown as ApiResponse);
   }
 
   static paginated<T>(
