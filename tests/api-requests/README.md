@@ -1,87 +1,56 @@
-# API Testing Setup
+# API Testing Setup (VS Code REST Client)
 
-## 📋 Requirements
+## Requirements
 
-### VS Code Extension
-Install **REST Client** extension by Huachao Mao:
+- VS Code extension: REST Client (Huachao Mao)
+
+## Environment Setup
+
+1) Copy env file
 ```
-Name: REST Client
-Id: humao.rest-client
-Description: REST Client for Visual Studio Code
-Publisher: Huachao Mao
+cp tests/api-requests/.env.example tests/api-requests/.env
 ```
+2) Edit `tests/api-requests/.env` and set:
+- `API_BASE_URL=http://localhost:3001/api/v1`
+- `TEST_EMAIL`, `TEST_PASSWORD` (dan `ADMIN_EMAIL`, `ADMIN_PASSWORD` bila perlu)
 
-**Installation:**
-1. Open VS Code
-2. Go to Extensions (Ctrl+Shift+X)
-3. Search "REST Client"
-4. Install the extension by Huachao Mao
+## Run Order (Disarankan)
 
-## 📁 Folder Structure
-
+1) Start API server
 ```
-tests/api-requests/
-├── README.md                 # This file
-├── environments.env          # Environment configurations
-├── auth/
-│   ├── login.http           # Login endpoints
-│   ├── register.http        # Registration endpoints
-│   └── refresh.http         # Token refresh
-├── books/
-│   ├── books-crud.http      # Book CRUD operations
-│   ├── books-search.http    # Search functionality
-│   └── books-categories.http # Category filtering
-├── users/
-│   ├── profile.http         # User profile management
-│   ├── user-lists.http      # Favorites, wishlist, reading
-│   └── user-admin.http      # Admin user management
-├── categories/
-│   └── categories.http      # Category management
-├── loans/
-│   ├── loan-operations.http # Borrow, return books
-│   └── loan-admin.http      # Admin loan management
-├── reviews/
-│   └── reviews.http         # Book reviews
-├── admin/
-│   ├── admin-dashboard.http # Admin endpoints
-│   └── system-health.http   # Health checks
-└── quick-tests.http         # Quick testing scenarios
+pnpm dev
 ```
 
-## 🚀 Usage
+2) Health check
+- Open `tests/api-requests/quick-tests.http` → request "Health Check"
 
-1. **Start your API server**
-   ```bash
-   npm run dev
-   ```
+3) Auto-login (set global token untuk semua request)
+- Open `tests/api-requests/auth/auto-login.http`
+- Send request "Auto-login as test user"
+- Optional: jalankan bagian admin untuk `{{adminToken}}`
 
-2. **Select Environment**
-   - Open any `.http` file
-   - Click on environment selector in bottom-right
-   - Choose: `dev`, `prod`, `docker`, or `test`
+4) Quick checks (tanpa copy-paste token)
+- Open `tests/api-requests/quick-tests.http`
+- Jalankan urut: Health → API Info → Login (opsional) → Get Profile → Books → Categories → Search → Loans
 
-3. **Run Requests**
-   - Click "Send Request" above any request block
-   - Use Ctrl+Alt+R (Windows) or Cmd+Alt+R (Mac)
+5) Domain-specific
+- Books: `books/*.http`
+- Categories: `categories/categories.http`
+- Users: `users/profile.http`
+- Reviews: `reviews/reviews.http`
+- Loans: `loans/*.http`
+- Notifications: `notifications/notifications.http`
+- Recommendations: `recommendations/*.http`
+- Admin: `admin/*.http`
 
-## 🔑 Authentication Flow
+6) Token expired? Auto-refresh
+- Open `auth/auto-refresh.http` → kirim request pertama
 
-1. First login using `auth/login.http`
-2. Copy the `accessToken` from response
-3. Use token in other authenticated requests
+7) Logout & cleanup
+- `auth/logout.http` (membersihkan token global)
 
-## 📝 Environment Variables
+## Catatan
 
-Available in `environments.env`:
-- `baseUrl` - API base URL
-- `adminEmail`, `adminPassword` - Admin credentials
-- `userEmail`, `userPassword` - User credentials
-- `librarianEmail`, `librarianPassword` - Librarian credentials
-
-## 🧪 Test Data
-
-From seed data (`prisma/seed.ts`):
-- **Admin**: admin@digitallibrary.com / password123
-- **Librarian**: librarian@digitallibrary.com / password123  
-- **User 1**: john.doe@example.com / password123
-- **User 2**: alice@example.com / password123
+- Semua file `.http` membaca `@baseUrl` dari `{{$dotenv API_BASE_URL}}`.
+- Header Authorization otomatis pakai `{{token}}` global jika tersedia; fallback ke `{{$dotenv ACCESS_TOKEN}}`.
+- Seed data contoh di `prisma/seed.ts` (admin/librarian/user) dapat digunakan untuk uji cepat.

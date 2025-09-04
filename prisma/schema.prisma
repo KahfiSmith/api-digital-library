@@ -119,6 +119,10 @@ model Book {
   bookReservations BookReservation[]
 
   @@map("books")
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 model BookLoan {
@@ -139,6 +143,8 @@ model BookLoan {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@map("book_loans")
+  @@index([userId])
+  @@index([loanDate])
 }
 
 model BookReview {
@@ -157,6 +163,8 @@ model BookReview {
 
   @@unique([userId, bookId])
   @@map("book_reviews")
+  @@index([bookId])
+  @@index([createdAt])
 }
 
 model UserBookList {
@@ -172,6 +180,9 @@ model UserBookList {
 
   @@unique([userId, bookId, listType])
   @@map("user_book_lists")
+  @@index([userId])
+  @@index([bookId])
+  @@index([addedAt])
 }
 
 model RefreshToken {

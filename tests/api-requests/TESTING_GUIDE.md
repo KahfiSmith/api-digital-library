@@ -1,35 +1,57 @@
 # API Testing Guide
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Urutan Disarankan)
 
-### 1. Environment Setup
+1) Environment Setup
 ```bash
-# Copy environment file
-cp .env.example .env
-
-# Edit .env file with your API URL
-# Make sure API_BASE_URL=http://localhost:3001/api/v1
+cp tests/api-requests/.env.example tests/api-requests/.env
+# Edit tests/api-requests/.env → set API_BASE_URL & credentials
 ```
 
-### 2. Start the Server
+2) Start Server
 ```bash
-# In project root directory
-npm run dev
+pnpm dev
 ```
+
+3) Health Check
+- Buka `tests/api-requests/quick-tests.http` → kirim "Health Check"
+
+4) Auto Login (set token global)
+- Buka `tests/api-requests/auth/auto-login.http` → kirim bagian user
+- Opsional: kirim bagian admin untuk dapat `{{adminToken}}`
+
+5) Quick Tests
+- Jalankan `tests/api-requests/quick-tests.http` secara berurutan
+
+6) Lainnya (sesuai kebutuhan)
+- Books/Categories/Users/Loans/Reviews/Notifications/Recommendations
 
 ## 📋 Testing Authentication Flow
 
-### Method 1: Automatic Variable Capture (VS Code REST Client)
+### Method 1: Auto Login + Global Token (Direkomendasikan)
+
+1. **Open** `auth/auto-login.http`
+2. **Run "Auto-login as test user"** – tokens disimpan ke global `{{token}}`
+3. Semua file kini otomatis pakai `{{token}}` jika tersedia (fallback ke `{{$dotenv ACCESS_TOKEN}}`)
+4. Opsi: jalankan auto-login admin untuk dapat `{{adminToken}}` dan test endpoint admin
+
+### Auto Refresh Token
+
+- Jika mendapat 401 (token expired), jalankan `auth/auto-refresh.http`:
+  - Menggunakan `{{refreshToken}}` global untuk request `POST /auth/refresh`
+  - Menimpa `{{token}}` dan `{{refreshToken}}` global dengan nilai baru
+- Alternatif: gunakan `auth/refresh.http` (saya tambahkan response hook agar otomatis update global token)
+
+### Method 2: Automatic Variable Capture (Verify/Reset Flow)
 
 1. **Open** `auth/verify-reset.http`
-2. **Run Step 1** - Register user (this captures `verify_email`, `verify_tokenId`, `verify_token`)
-3. **Check logs** - Look for ✅ success messages in VS Code output panel
-4. **Run Step 2** - Verify email using captured tokens  
-5. **Run Step 3** - Request password reset (captures `reset_tokenId`, `reset_token`)
-6. **Run Step 4** - Reset password using captured tokens
-7. **Run Step 5** - Test login with new password
+2. **Run Step 1** - Register user (captures `verify_email`, `verify_tokenId`, `verify_token`)
+3. **Run Step 2** - Verify email using captured tokens  
+4. **Run Step 3** - Request password reset (captures `reset_tokenId`, `reset_token`)
+5. **Run Step 4** - Reset password using captured tokens
+6. **Run Step 5** - Test login with new password
 
-### Method 2: Manual Copy-Paste (If variables don't work)
+### Method 3: Manual Copy-Paste (Fallback)
 
 1. **Run "Manual 1"** - Register user
 2. **Copy tokens** from response:

@@ -33,8 +33,8 @@ import { requestId } from '@/middleware/requestId';
 const app: Application = express();
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.RATE_LIMIT_MAX || 100),
   message: 'Too many requests from this IP, please try again later',
   standardHeaders: true,
   legacyHeaders: false,
@@ -91,7 +91,10 @@ app.use('/api/v1/swagger', swaggerUi.serve, swaggerUi.setup(openapiSpec, {
 }));
 
 app.use('/api/v1', indexRoutes);
-const authLimiter = rateLimit({ windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000), max: 20 });
+const authLimiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX || 20),
+});
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/books', bookRoutes);
