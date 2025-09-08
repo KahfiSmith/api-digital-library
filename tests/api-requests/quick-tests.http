@@ -1,46 +1,48 @@
 ### Quick API Tests - Essential Endpoints
-### Environment variables from environments.env
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
+@baseUrl = {{$dotenv API_BASE_URL}}
+@email = {{$dotenv TEST_EMAIL}}
+@password = {{$dotenv TEST_PASSWORD}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ### Step 1: Health Check
 GET {{baseUrl}}/health
 
 ### Step 2: API Info
-GET {{apiUrl}}/
+GET {{baseUrl}}/
 
 ### Step 3: Login as User
-POST {{apiUrl}}/auth/login
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "{{$dotenv userEmail}}",
-  "password": "{{$dotenv userPassword}}"
+  "identifier": "{{email}}",
+  "password": "{{password}}"
 }
 
 ### Manual Step: Copy token from above response
-@token = YOUR_TOKEN_HERE
+@token = {{token}}
 
 ### Step 4: Get Profile
-GET {{apiUrl}}/users/profile
+GET {{baseUrl}}/users/profile
 Authorization: Bearer {{token}}
 
 ### Step 5: Get All Books
-GET {{apiUrl}}/books
+GET {{baseUrl}}/books
 
 ### Step 6: Get Categories
-GET {{apiUrl}}/categories
+GET {{baseUrl}}/categories
 
 ### Step 7: Search Books
-GET {{apiUrl}}/books/search?q=java
+GET {{baseUrl}}/search/books?query=java
 
 ### Step 8: Get My Loans
-GET {{apiUrl}}/loans/my-loans
+GET {{baseUrl}}/loans/my-loans
 Authorization: Bearer {{token}}
 
 ### Step 9: Create Book Review
-POST {{apiUrl}}/reviews
+POST {{baseUrl}}/reviews
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -51,7 +53,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Step 10: Borrow a Book
-POST {{apiUrl}}/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
 Authorization: Bearer {{token}}
 

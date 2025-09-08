@@ -1,8 +1,8 @@
 ### System Health and Monitoring
-### Environment variables from ../environments.env
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ###
 ### System Health Check
@@ -11,12 +11,12 @@ Content-Type: application/json
 
 ###
 ### API Health Check
-GET {{apiUrl}}/health
+GET {{baseUrl}}/health
 Content-Type: application/json
 
 ###
 ### API Information
-GET {{apiUrl}}/
+GET {{baseUrl}}/
 Content-Type: application/json
 
 ###
@@ -26,43 +26,43 @@ Content-Type: application/json
 
 ###
 ### Database Connection Status
-GET {{apiUrl}}/health/database
+GET {{baseUrl}}/health/database
 Content-Type: application/json
 
 ###
 ### System Metrics (Admin only)
-GET {{apiUrl}}/admin/metrics
+GET {{baseUrl}}/admin/metrics
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### API Rate Limit Test (send multiple requests quickly)
-GET {{apiUrl}}/
+GET {{baseUrl}}/
 Content-Type: application/json
 
 ###
-GET {{apiUrl}}/
+GET {{baseUrl}}/
 Content-Type: application/json
 
 ###
-GET {{apiUrl}}/
+GET {{baseUrl}}/
 Content-Type: application/json
 
 ###
 ### Error Endpoint Test
-GET {{apiUrl}}/invalid-endpoint
+GET {{baseUrl}}/invalid-endpoint
 Content-Type: application/json
 
 ###
 ### CORS Test (OPTIONS request)
-OPTIONS {{apiUrl}}/books
+OPTIONS {{baseUrl}}/books
 Origin: http://localhost:3000
 Access-Control-Request-Method: GET
 Access-Control-Request-Headers: Content-Type
 
 ###
 ### Large Request Test
-POST {{apiUrl}}/test/large-request
+POST {{baseUrl}}/test/large-request
 Content-Type: application/json
 
 {
@@ -71,19 +71,19 @@ Content-Type: application/json
 
 ###
 ### Memory Usage Test
-GET {{apiUrl}}/admin/memory
+GET {{baseUrl}}/admin/memory
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Performance Test - Concurrent Requests
-GET {{apiUrl}}/books
+GET {{baseUrl}}/books
 Content-Type: application/json
 
 ###
-GET {{apiUrl}}/categories
+GET {{baseUrl}}/categories
 Content-Type: application/json
 
 ###
-GET {{apiUrl}}/health
+GET {{baseUrl}}/health
 Content-Type: application/json

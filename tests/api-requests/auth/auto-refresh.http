@@ -1,0 +1,47 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+
+### Refresh token using global refreshToken (preferred)
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+    client.log("🔄 Updated global refreshToken");
+  }
+} catch (e) {
+  client.log("Failed to parse refresh response: " + e.message);
+}
+%}
+
+### Refresh using cookie (if your REST Client preserves cookies)
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{}
+
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (cookie-based refresh)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+  }
+} catch (e) {}
+%}
+

@@ -1,8 +1,8 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
 ### Register new user to get verification token
 # Note: Ubah username dan email untuk setiap pengujian baru
-POST {{baseUrl}}/api/v1/auth/register
+POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {

@@ -1,0 +1,76 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@email = {{$dotenv TEST_EMAIL}}
+@password = {{$dotenv TEST_PASSWORD}}
+@adminEmail = {{$dotenv ADMIN_EMAIL}}
+@adminPassword = {{$dotenv ADMIN_PASSWORD}}
+
+### Auto-login as test user and capture tokens to globals
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("✅ Saved global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+    client.log("✅ Saved global refreshToken");
+  }
+  client.log("Tip: files now use {{token}} if set globally");
+} catch (e) {
+  client.log("Failed to parse login response: " + e.message);
+}
+%}
+
+### Verify current user with captured token
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### Auto-login as admin (optional) and capture tokens
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "identifier": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("adminToken", tokens.accessToken);
+    client.log("✅ Saved global adminToken (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("adminRefreshToken", tokens.refreshToken);
+    client.log("✅ Saved global adminRefreshToken");
+  }
+} catch (e) {}
+%}
+
+### Quick check using adminToken
+GET {{baseUrl}}/admin/stats
+Authorization: Bearer {{adminToken}}
+
+### Clear captured globals (optional)
+GET {{baseUrl}}/health
+
+> {%
+client.global.set("token", "");
+client.global.set("refreshToken", "");
+client.global.set("adminToken", "");
+client.global.set("adminRefreshToken", "");
+client.log("🧹 Cleared global tokens");
+%}
+
