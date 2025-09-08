@@ -1,5 +1,8 @@
 @baseUrl = {{$dotenv API_BASE_URL}}
 @token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
+@adminEmail = {{$dotenv ADMIN_EMAIL}}
+@adminPassword = {{$dotenv ADMIN_PASSWORD}}
 
 ### Register and Login First (if needed)
 POST {{baseUrl}}/auth/register
@@ -18,8 +21,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
-  "password": "Password123!"
+  "identifier": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
 }
 
 ###

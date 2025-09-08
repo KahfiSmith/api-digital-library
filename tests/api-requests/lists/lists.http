@@ -1,19 +1,23 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
 
 ### Get all lists (grouped)
-GET {{baseUrl}}/api/v1/lists
+GET {{baseUrl}}/lists
+Authorization: Bearer {{token}}
 
 ### List FAVORITES
-GET {{baseUrl}}/api/v1/lists/FAVORITES?limit=5
+GET {{baseUrl}}/lists/FAVORITES?limit=5
+Authorization: Bearer {{token}}
 
 ### Add to WISHLIST (replace with a real bookId)
-POST {{baseUrl}}/api/v1/lists/WISHLIST
+POST {{baseUrl}}/lists/WISHLIST
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "bookId": "<REPLACE_BOOK_ID>"
 }
 
 ### Remove from WISHLIST (replace with a real bookId)
-DELETE {{baseUrl}}/api/v1/lists/WISHLIST/<REPLACE_BOOK_ID>
-
+DELETE {{baseUrl}}/lists/WISHLIST/<REPLACE_BOOK_ID>
+Authorization: Bearer {{token}}

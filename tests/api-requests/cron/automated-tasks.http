@@ -1,10 +1,14 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
 
 ### Check due loans (run daily at 9 AM)
-POST {{baseUrl}}/api/v1/cron/check-due-loans
+POST {{baseUrl}}/cron/check-due-loans
+Authorization: Bearer {{token}}
 
 ### Check overdue loans (run daily at 10 AM)
-POST {{baseUrl}}/api/v1/cron/check-overdue-loans
+POST {{baseUrl}}/cron/check-overdue-loans
+Authorization: Bearer {{token}}
 
 ### Run all daily tasks (comprehensive daily check)
-POST {{baseUrl}}/api/v1/cron/daily-tasks
+POST {{baseUrl}}/cron/daily-tasks
+Authorization: Bearer {{token}}

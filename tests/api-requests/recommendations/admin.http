@@ -1,6 +1,8 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+
 ### Get recommendation analytics (admin only)
 GET {{baseUrl}}/recommendations/analytics
-Authorization: Bearer {{adminToken}}
+Authorization: Bearer {{$dotenv ACCESS_TOKEN}}
 
 ### Health check for recommendations service
 GET {{baseUrl}}/recommendations/health

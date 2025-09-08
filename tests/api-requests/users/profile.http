@@ -1,11 +1,15 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ### Get current user profile (requires login)
-GET {{baseUrl}}/api/v1/users/profile
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{token}}
 
 ### Update user profile
-PUT {{baseUrl}}/api/v1/users/profile
+PUT {{baseUrl}}/users/profile
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "firstName": "John Updated",
@@ -13,12 +17,14 @@ Content-Type: application/json
 }
 
 ### Upload avatar (requires form-data - replace with actual file path)
-POST {{baseUrl}}/api/v1/users/profile/avatar
+POST {{baseUrl}}/users/profile/avatar
 Content-Type: multipart/form-data
+Authorization: Bearer {{token}}
 
 ### Change password
-PUT {{baseUrl}}/api/v1/users/profile/password
+PUT {{baseUrl}}/users/profile/password
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "currentPassword": "Password123!",
@@ -26,16 +32,20 @@ Content-Type: application/json
 }
 
 ### Get all users (admin/librarian only)
-GET {{baseUrl}}/api/v1/users?page=1&limit=10
+GET {{baseUrl}}/users?page=1&limit=10
+Authorization: Bearer {{token}}
 
 ### Search users (admin/librarian only)
-GET {{baseUrl}}/api/v1/users?search=john&page=1&limit=10
+GET {{baseUrl}}/users?search=john&page=1&limit=10
+Authorization: Bearer {{token}}
 
 ### Get users sorted by username (admin/librarian only)
-GET {{baseUrl}}/api/v1/users?sortBy=username&sortOrder=asc&page=1&limit=10
+GET {{baseUrl}}/users?sortBy=username&sortOrder=asc&page=1&limit=10
+Authorization: Bearer {{token}}
 
 ### Get user by ID (admin/librarian only)
-GET {{baseUrl}}/api/v1/users/user_id_here
+GET {{baseUrl}}/users/user_id_here
+Authorization: Bearer {{token}}
 
 ### Test invalid password change (should fail with 401)
 PUT {{baseUrl}}/api/v1/users/profile/password
