@@ -1,33 +1,91 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
+@refreshToken = {{refreshToken}}
 
 ### Refresh token using cookie (automatic - after login with cookie)
-POST {{baseUrl}}/api/v1/auth/refresh
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
-### Refresh token using body (replace with actual token from login response)
-POST {{baseUrl}}/api/v1/auth/refresh
+### Refresh token using body (uses global {{refreshToken}} if set)
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+  }
+} catch (e) {}
+%}
+
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "refreshToken": "{{refreshToken}}"
 }
 
 ### Refresh with empty body (should use cookie if available)
-POST {{baseUrl}}/api/v1/auth/refresh
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+  }
+} catch (e) {}
+%}
+
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {}
 
 ### Refresh with invalid token (should fail with 401)
-POST {{baseUrl}}/api/v1/auth/refresh
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+  }
+} catch (e) {}
+%}
+
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {
   "refreshToken": "invalid_token"
 }
 
-### Refresh without token and no cookie (should fail with 401)  
-POST {{baseUrl}}/api/v1/auth/refresh
+### Refresh without token and no cookie (should fail with 401)
+> {%
+try {
+  const body = response.body;
+  const tokens = body?.data?.tokens || body?.tokens;
+  if (tokens?.accessToken) {
+    client.global.set("token", tokens.accessToken);
+    client.log("🔄 Updated global token (accessToken)");
+  }
+  if (tokens?.refreshToken) {
+    client.global.set("refreshToken", tokens.refreshToken);
+  }
+} catch (e) {}
+%}
+POST {{baseUrl}}/auth/refresh
 Content-Type: application/json
 
 {}

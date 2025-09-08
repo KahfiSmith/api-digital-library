@@ -1,12 +1,15 @@
 @baseUrl = {{$dotenv API_BASE_URL}}
+@email = {{$dotenv TEST_EMAIL}}
+@password = {{$dotenv TEST_PASSWORD}}
+@username = {{$dotenv TEST_USERNAME}}
 
 ### Login with email
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "identifier": "test123@example.com",
-  "password": "Password123!"
+  "identifier": "{{email}}",
+  "password": "{{password}}"
 }
 
 ### Login with username
@@ -14,8 +17,8 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "identifier": "testuser123",
-  "password": "Password123!"
+  "identifier": "{{username}}",
+  "password": "{{password}}"
 }
 
 ### Login with invalid credentials (should fail with 401)
@@ -34,4 +37,3 @@ Content-Type: application/json
 {
   "identifier": "test123@example.com"
 }
-
