@@ -1,14 +1,17 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ### List books
-GET {{baseUrl}}/api/v1/books?limit=5
+GET {{baseUrl}}/books?limit=5
 
 ### Get a book by ID (replace with a real ID from list)
-GET {{baseUrl}}/api/v1/books/{{bookId}}
+GET {{baseUrl}}/books/{{bookId}}
 
 ### Create a book (requires ADMIN/LIBRARIAN; replace categoryId)
-POST {{baseUrl}}/api/v1/books
+POST {{baseUrl}}/books
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "title": "My Test Book",
@@ -19,13 +22,14 @@ Content-Type: application/json
 }
 
 ### Update a book (replace :id)
-PUT {{baseUrl}}/api/v1/books/{{bookId}}
+PUT {{baseUrl}}/books/{{bookId}}
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "title": "My Test Book Updated"
 }
 
 ### Delete a book (replace :id)
-DELETE {{baseUrl}}/api/v1/books/{{bookId}}
-
+DELETE {{baseUrl}}/books/{{bookId}}
+Authorization: Bearer {{token}}

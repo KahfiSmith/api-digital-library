@@ -1,80 +1,78 @@
 ### Books - Category Operations
-### Environment variables from ../environments.env
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
+@baseUrl = {{$dotenv API_BASE_URL}}
 
 ###
 ### Get Books by Category - Programming
-GET {{apiUrl}}/books/category/programming
+GET {{baseUrl}}/books/category/programming
 Content-Type: application/json
 
 ###
 ### Get Books by Category - Software Architecture
-GET {{apiUrl}}/books/category/software-architecture
+GET {{baseUrl}}/books/category/software-architecture
 Content-Type: application/json
 
 ###
 ### Get Books by Category - Interview Preparation
-GET {{apiUrl}}/books/category/interview-preparation
+GET {{baseUrl}}/books/category/interview-preparation
 Content-Type: application/json
 
 ###
 ### Get Books by Category - Web Development
-GET {{apiUrl}}/books/category/web-development
+GET {{baseUrl}}/books/category/web-development
 Content-Type: application/json
 
 ###
 ### Get Books by Category - Data Science
-GET {{apiUrl}}/books/category/data-science
+GET {{baseUrl}}/books/category/data-science
 Content-Type: application/json
 
 ###
 ### Get Books by Category - Fiction
-GET {{apiUrl}}/books/category/fiction
+GET {{baseUrl}}/books/category/fiction
 Content-Type: application/json
 
 ###
 ### Get Books by Category with Pagination
-GET {{apiUrl}}/books/category/programming?page=1&limit=3
+GET {{baseUrl}}/books/category/programming?page=1&limit=3
 Content-Type: application/json
 
 ###
 ### Get Books by Category with Sorting
-GET {{apiUrl}}/books/category/programming?sortBy=rating&sortOrder=desc
+GET {{baseUrl}}/books/category/programming?sortBy=rating&sortOrder=desc
 Content-Type: application/json
 
 ###
 ### Get Available Books Only in Category
-GET {{apiUrl}}/books/category/programming?availableOnly=true
+GET {{baseUrl}}/books/category/programming?availableOnly=true
 Content-Type: application/json
 
 ###
 ### Get Books by Non-existent Category (Error Test)
-GET {{apiUrl}}/books/category/nonexistent-category
+GET {{baseUrl}}/books/category/nonexistent-category
 Content-Type: application/json
 
 ###
 ### Get Popular Books by Category
-GET {{apiUrl}}/books/category/programming/popular
+GET {{baseUrl}}/books/category/programming/popular
 Content-Type: application/json
 
 ###
 ### Get Recently Added Books by Category
-GET {{apiUrl}}/books/category/programming/recent
+GET {{baseUrl}}/books/category/programming/recent
 Content-Type: application/json
 
 ###
 ### Get Top Rated Books by Category
-GET {{apiUrl}}/books/category/programming/top-rated
+GET {{baseUrl}}/books/category/programming/top-rated
 Content-Type: application/json
 
 ###
 ### Get Books by Category with Rating Filter
-GET {{apiUrl}}/books/category/programming?minRating=4.5
+GET {{baseUrl}}/books/category/programming?minRating=4.5
 Content-Type: application/json
 
 ###
 ### Get Books by Multiple Categories
-GET {{apiUrl}}/books/categories?categories=programming,software-architecture
+GET {{baseUrl}}/books/categories?categories=programming,software-architecture
 Content-Type: application/json

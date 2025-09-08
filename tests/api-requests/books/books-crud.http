@@ -1,35 +1,34 @@
 ### Books - CRUD Operations
-### Environment variables from ../environments.env
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
-@authToken = YOUR_TOKEN_HERE
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ###
 ### Get All Books
-GET {{apiUrl}}/books
+GET {{baseUrl}}/books
 Content-Type: application/json
 
 ###
 ### Get All Books with Pagination
-GET {{apiUrl}}/books?page=1&limit=5
+GET {{baseUrl}}/books?page=1&limit=5
 Content-Type: application/json
 
 ###
 ### Get Book by ID (Effective Java from seed data)
-GET {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+GET {{baseUrl}}/books/660e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
 
 ###
 ### Get Book by ISBN
-GET {{apiUrl}}/books/isbn/9780134685991
+GET {{baseUrl}}/books/isbn/9780134685991
 Content-Type: application/json
 
 ###
 ### Create New Book (Admin/Librarian only)
-POST {{apiUrl}}/books
+POST {{baseUrl}}/books
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "isbn": "9781234567890",
@@ -48,9 +47,9 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Update Book (Admin/Librarian only)
-PUT {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+PUT {{baseUrl}}/books/660e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "description": "Updated description: The definitive guide to Java programming from the creator of the Java platform. Now with updated examples and best practices.",
@@ -60,9 +59,9 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Partial Update Book (Admin/Librarian only)
-PATCH {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+PATCH {{baseUrl}}/books/660e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "rating": 4.9
@@ -70,19 +69,19 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Delete Book (Admin only)
-DELETE {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440000
-Authorization: Bearer {{authToken}}
+DELETE {{baseUrl}}/books/660e8400-e29b-41d4-a716-446655440000
+Authorization: Bearer {{token}}
 
 ###
 ### Get Non-existent Book (Error Test)
-GET {{apiUrl}}/books/invalid-book-id
+GET {{baseUrl}}/books/invalid-book-id
 Content-Type: application/json
 
 ###
 ### Create Book with Invalid Data (Validation Test)
-POST {{apiUrl}}/books
+POST {{baseUrl}}/books
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "title": "Incomplete Book",
@@ -91,7 +90,7 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Create Book without Authentication (Error Test)
-POST {{apiUrl}}/books
+POST {{baseUrl}}/books
 Content-Type: application/json
 
 {
