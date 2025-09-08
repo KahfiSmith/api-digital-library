@@ -1,10 +1,10 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
 ### List categories
-GET {{baseUrl}}/api/v1/categories?limit=10
+GET {{baseUrl}}/categories?limit=10
 
 ### Create category (admin required)
-POST {{baseUrl}}/api/v1/categories
+POST {{baseUrl}}/categories
 Content-Type: application/json
 
 {
@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Update category (replace :id)
-PUT {{baseUrl}}/api/v1/categories/{{categoryId}}
+PUT {{baseUrl}}/categories/{{categoryId}}
 Content-Type: application/json
 
 {
@@ -21,5 +21,4 @@ Content-Type: application/json
 }
 
 ### Delete category (replace :id)
-DELETE {{baseUrl}}/api/v1/categories/{{categoryId}}
-
+DELETE {{baseUrl}}/categories/{{categoryId}}

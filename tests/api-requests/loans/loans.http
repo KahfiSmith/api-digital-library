@@ -1,11 +1,15 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ### List all loans (admin only)
-GET {{baseUrl}}/api/v1/loans
+GET {{baseUrl}}/loans
+Authorization: Bearer {{token}}
 
 ### Create a loan (replace with real IDs)
-POST {{baseUrl}}/api/v1/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "userId": "<REPLACE_USER_ID>",
@@ -13,8 +17,9 @@ Content-Type: application/json
 }
 
 ### Return a loan (replace :id)
-PUT {{baseUrl}}/api/v1/loans/{{loanId}}/return
+PUT {{baseUrl}}/loans/{{loanId}}/return
+Authorization: Bearer {{token}}
 
 ### Loans by user (replace :userId)
-GET {{baseUrl}}/api/v1/loans/user/{{userId}}
-
+GET {{baseUrl}}/loans/user/{{userId}}
+Authorization: Bearer {{token}}

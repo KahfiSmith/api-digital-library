@@ -1,29 +1,39 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ### Get all notifications
-GET {{baseUrl}}/api/v1/notifications?page=1&limit=20
+GET {{baseUrl}}/notifications?page=1&limit=20
+Authorization: Bearer {{token}}
 
 ### Get only unread notifications
-GET {{baseUrl}}/api/v1/notifications?unreadOnly=true&page=1&limit=10
+GET {{baseUrl}}/notifications?unreadOnly=true&page=1&limit=10
+Authorization: Bearer {{token}}
 
 ### Get unread count
-GET {{baseUrl}}/api/v1/notifications/unread-count
+GET {{baseUrl}}/notifications/unread-count
+Authorization: Bearer {{token}}
 
 ### Mark notification as read
-PATCH {{baseUrl}}/api/v1/notifications/notification_id_here/read
+PATCH {{baseUrl}}/notifications/notification_id_here/read
+Authorization: Bearer {{token}}
 
 ### Mark all notifications as read
-PATCH {{baseUrl}}/api/v1/notifications/read-all
+PATCH {{baseUrl}}/notifications/read-all
+Authorization: Bearer {{token}}
 
 ### Delete a notification
-DELETE {{baseUrl}}/api/v1/notifications/notification_id_here
+DELETE {{baseUrl}}/notifications/notification_id_here
+Authorization: Bearer {{token}}
 
 ### Delete all notifications
-DELETE {{baseUrl}}/api/v1/notifications
+DELETE {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
 
 ### Create system announcement (admin/librarian only)
-POST {{baseUrl}}/api/v1/notifications/system-announcement
+POST {{baseUrl}}/notifications/system-announcement
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "title": "Library Maintenance Notice",
@@ -31,8 +41,9 @@ Content-Type: application/json
 }
 
 ### Create custom notification (admin/librarian only)
-POST {{baseUrl}}/api/v1/notifications/custom
+POST {{baseUrl}}/notifications/custom
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "userId": "user_id_here",

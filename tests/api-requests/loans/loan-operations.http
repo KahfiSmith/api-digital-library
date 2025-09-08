@@ -1,27 +1,26 @@
 ### Book Loans - User Operations
-### Environment variables from ../environments.env
 
-@baseUrl = {{$dotenv baseUrl}}
-@apiUrl = {{$dotenv apiUrl}}
-@authToken = YOUR_TOKEN_HERE
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ###
 ### Get My Active Loans
-GET {{apiUrl}}/loans/my-loans
+GET {{baseUrl}}/loans/my-loans
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Get My Loan History
-GET {{apiUrl}}/loans/my-loans?status=all
+GET {{baseUrl}}/loans/my-loans?status=all
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Create New Book Loan (Borrow Book)
-POST {{apiUrl}}/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "bookId": "660e8400-e29b-41d4-a716-446655440002"
@@ -29,21 +28,21 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Get Loan Details
-GET {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000
+GET {{baseUrl}}/loans/770e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Return Book (End Loan)
-PUT {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/return
+PUT {{baseUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/return
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Renew Loan (Extend Due Date)
-PUT {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/renew
+PUT {{baseUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/renew
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "extensionDays": 7
@@ -51,9 +50,9 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Request Loan Extension
-POST {{apiUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/extension-request
+POST {{baseUrl}}/loans/770e8400-e29b-41d4-a716-446655440000/extension-request
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "requestedDays": 14,
@@ -62,20 +61,20 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Get Overdue Loans
-GET {{apiUrl}}/loans/my-loans?status=overdue
+GET {{baseUrl}}/loans/my-loans?status=overdue
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Check Book Availability for Loan
-GET {{apiUrl}}/books/660e8400-e29b-41d4-a716-446655440002/availability
+GET {{baseUrl}}/books/660e8400-e29b-41d4-a716-446655440002/availability
 Content-Type: application/json
 
 ###
 ### Reserve Book (if not available)
-POST {{apiUrl}}/loans/reserve
+POST {{baseUrl}}/loans/reserve
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "bookId": "660e8400-e29b-41d4-a716-446655440002"
@@ -83,20 +82,20 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Get My Reservations
-GET {{apiUrl}}/loans/my-reservations
+GET {{baseUrl}}/loans/my-reservations
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 ###
 ### Cancel Reservation
-DELETE {{apiUrl}}/loans/reservations/reservation-id-here
-Authorization: Bearer {{authToken}}
+DELETE {{baseUrl}}/loans/reservations/reservation-id-here
+Authorization: Bearer {{token}}
 
 ###
 ### Try to Borrow Unavailable Book (Error Test)
-POST {{apiUrl}}/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "bookId": "660e8400-e29b-41d4-a716-446655440003"
@@ -104,9 +103,9 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Try to Borrow Non-existent Book (Error Test)
-POST {{apiUrl}}/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
-Authorization: Bearer {{authToken}}
+Authorization: Bearer {{token}}
 
 {
   "bookId": "invalid-book-id"
@@ -114,7 +113,7 @@ Authorization: Bearer {{authToken}}
 
 ###
 ### Try Loan Operation without Authentication (Error Test)
-POST {{apiUrl}}/loans
+POST {{baseUrl}}/loans
 Content-Type: application/json
 
 {
