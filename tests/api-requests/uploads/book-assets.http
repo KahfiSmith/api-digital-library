@@ -1,7 +1,7 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
 
 ### Fetch one book and save its id to {{bookId}}
-GET {{baseUrl}}/api/v1/books?limit=1
+GET {{baseUrl}}/books?limit=1
 
 > {%
 try {
@@ -24,7 +24,7 @@ try {
 # - Ensure {{bookId}} is set above, or replace it manually
 # - Replace the file path below with an existing image on your machine
 
-POST {{baseUrl}}/api/v1/books/{{bookId}}/cover
+POST {{baseUrl}}/books/{{bookId}}/cover
 Content-Type: multipart/form-data; boundary=----RestClientBoundary
 
 ------RestClientBoundary
@@ -37,7 +37,7 @@ Content-Type: image/png
 ### Upload book PDF (ADMIN/LIBRARIAN only)
 # Replace with a real PDF file path
 
-POST {{baseUrl}}/api/v1/books/{{bookId}}/pdf
+POST {{baseUrl}}/books/{{bookId}}/pdf
 Content-Type: multipart/form-data; boundary=----RestClientBoundary
 
 ------RestClientBoundary
@@ -46,4 +46,3 @@ Content-Type: application/pdf
 
 < ./path/to/your/book.pdf
 ------RestClientBoundary--
-

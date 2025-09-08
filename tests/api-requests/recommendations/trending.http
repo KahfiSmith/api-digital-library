@@ -1,3 +1,5 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+
 ### Get trending books (no authentication required)
 GET {{baseUrl}}/recommendations/trending
 

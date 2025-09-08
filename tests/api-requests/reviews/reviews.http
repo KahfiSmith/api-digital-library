@@ -1,8 +1,10 @@
-@baseUrl = http://localhost:3001
+@baseUrl = {{$dotenv API_BASE_URL}}
+@token = {{$dotenv ACCESS_TOKEN}}
 
 ### Create a new review (requires login)
-POST {{baseUrl}}/api/v1/reviews
+POST {{baseUrl}}/reviews
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "bookId": "book_id_here",
@@ -12,8 +14,9 @@ Content-Type: application/json
 }
 
 ### Create review with minimal data
-POST {{baseUrl}}/api/v1/reviews
+POST {{baseUrl}}/reviews
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "bookId": "book_id_here",
@@ -21,14 +24,16 @@ Content-Type: application/json
 }
 
 ### Get reviews for a book (public)
-GET {{baseUrl}}/api/v1/reviews/book/book_id_here?page=1&limit=10
+GET {{baseUrl}}/reviews/book/book_id_here?page=1&limit=10
 
 ### Get all reviews by a user (requires auth - own reviews or admin)
-GET {{baseUrl}}/api/v1/reviews/user/user_id_here?page=1&limit=10
+GET {{baseUrl}}/reviews/user/user_id_here?page=1&limit=10
+Authorization: Bearer {{token}}
 
 ### Update an existing review
-PUT {{baseUrl}}/api/v1/reviews/review_id_here
+PUT {{baseUrl}}/reviews/review_id_here
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "rating": 3,
@@ -37,19 +42,22 @@ Content-Type: application/json
 }
 
 ### Update review rating only
-PUT {{baseUrl}}/api/v1/reviews/review_id_here
+PUT {{baseUrl}}/reviews/review_id_here
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "rating": 5
 }
 
 ### Delete a review
-DELETE {{baseUrl}}/api/v1/reviews/review_id_here
+DELETE {{baseUrl}}/reviews/review_id_here
+Authorization: Bearer {{token}}
 
 ### Test invalid rating (should fail with 400)
-POST {{baseUrl}}/api/v1/reviews
+POST {{baseUrl}}/reviews
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "bookId": "book_id_here",
@@ -58,8 +66,9 @@ Content-Type: application/json
 }
 
 ### Test missing bookId (should fail with 400)
-POST {{baseUrl}}/api/v1/reviews
+POST {{baseUrl}}/reviews
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "rating": 5,

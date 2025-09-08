@@ -1,15 +1,17 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+
 ### Get personalized recommendations (requires authentication)
 GET {{baseUrl}}/recommendations/personalized
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{$dotenv ACCESS_TOKEN}}
 
 ### Get personalized recommendations with parameters
 GET {{baseUrl}}/recommendations/personalized?limit=5&excludeRead=true&minRating=4.0
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{$dotenv ACCESS_TOKEN}}
 
 ### Get personalized recommendations - no exclusions
 GET {{baseUrl}}/recommendations/personalized?excludeRead=false&limit=10
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{$dotenv ACCESS_TOKEN}}
 
 ### Get personalized recommendations - lower minimum rating
 GET {{baseUrl}}/recommendations/personalized?minRating=2.5&limit=15
-Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{$dotenv ACCESS_TOKEN}}

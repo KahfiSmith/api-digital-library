@@ -1,5 +1,6 @@
 @baseUrl = {{$dotenv API_BASE_URL}}
 @token = {{$dotenv ACCESS_TOKEN}}
+@token = {{token}}
 
 ###
 ### ADVANCED SEARCH API TESTS

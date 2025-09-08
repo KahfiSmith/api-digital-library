@@ -1,3 +1,6 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@bookId = {{$dotenv TEST_BOOK_ID}}
+
 ### Get similar books to a specific book
 GET {{baseUrl}}/recommendations/similar/{{bookId}}
 
@@ -5,5 +8,4 @@ GET {{baseUrl}}/recommendations/similar/{{bookId}}
 GET {{baseUrl}}/recommendations/similar/{{bookId}}?limit=3
 
 ### Test with different book ID (replace with actual book ID from your database)
-GET {{baseUrl}}/recommendations/similar/cm123book456id
-?limit=5
+GET {{baseUrl}}/recommendations/similar/cm123book456id?limit=5

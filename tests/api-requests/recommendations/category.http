@@ -1,3 +1,6 @@
+@baseUrl = {{$dotenv API_BASE_URL}}
+@categoryId = {{$dotenv TEST_CATEGORY_ID}}
+
 ### Get recommendations by category
 GET {{baseUrl}}/recommendations/category/{{categoryId}}
 
